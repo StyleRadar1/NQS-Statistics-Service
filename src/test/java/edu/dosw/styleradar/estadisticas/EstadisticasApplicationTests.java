@@ -1,10 +1,10 @@
-package edu.dosw.styleradar.pagos_suscripciones;
+package edu.dosw.styleradar.estadisticas;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PagosSuscripcionesApplicationTests {
+class EstadisticasApplicationTests {
 
 	@Test
 	void contextLoads() {
