@@ -1,13 +1,13 @@
-package edu.dosw.styleradar.pagos_suscripciones;
+package edu.dosw.styleradar.estadisticas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PagosSuscripcionesApplication {
+public class EstadisticasApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PagosSuscripcionesApplication.class, args);
+		SpringApplication.run(EstadisticasApplication.class, args);
 	}
 
 }
