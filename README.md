@@ -99,7 +99,7 @@
 * **Identificador de Servicio:** `ms-estadisticas`
 * **Paquete Arquitectónico:** `Paquete 4: estadisticas y Estadisticas`
 * **Puerto de Escucha Oficial:** `8091`
-* **Base de Datos Asignada:** `PostgreSQL 16` (`<nombre_db>_db`), aislada bajo el patrón *Database-per-Service*.
+* **Base de Datos Asignada:** `PostgreSQL 16` (`styleradar_statistics`), aislada bajo el patrón *Database-per-Service*.
 * **Bounded Context:** `estadisticas de Suscripciones`
 
 ### Responsabilidades del Dominio
@@ -255,11 +255,11 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
 
 | Entorno | Estado | Propósito | URL Base del Servicio | Swagger OpenAPI UI | Health Check |
 | :--- | :---: | :--- | :--- | :--- | :--- |
-| **Producción (PROD)** | Active | Despliegue productivo de StyleRadar | `https://styleradar-backend-prod.azurewebsites.net` | [Swagger UI PROD](https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-backend-prod.azurewebsites.net/actuator/health) |
-| **Calidad / Pruebas (QA)** | Active | Pruebas integradas de Sprint y QA | `https://styleradar-backend-qa.azurewebsites.net` | [Swagger UI QA](https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html) | [`/actuator/health`](https://styleradar-backend-qa.azurewebsites.net/actuator/health) |
-| **Desarrollo Local (DEV)** | Local | Entorno de desarrollo local en máquina | `http://localhost:8091` | [Swagger UI Local](http://localhost:8091/swagger-ui.html) | [`/actuator/health`](http://localhost:8091/actuator/health) |
+| **Producción (PROD)** | Próximo Sprint | Despliegue productivo de StyleRadar | Proximo Sprint | [Proximo Sprint](https://styleradar-backend-prod.azurewebsites.net/swagger-ui/index.html) | [`Proximo Sprint`](https://styleradar-backend-prod.azurewebsites.net/actuator/health) |
+| **Calidad / Pruebas (QA)** | Proximo Sprint | Pruebas integradas de Sprint y QA | Proximo Sprint | [Proximo Sprint](https://styleradar-backend-qa.azurewebsites.net/swagger-ui/index.html) | [`Proximo Sprint`](https://styleradar-backend-qa.azurewebsites.net/actuator/health) |
+| **Desarrollo Local (DEV)** | Local | Entorno de desarrollo local en máquina | `http://localhost:8091` | [Swagger UI Local](http://localhost:8091/swagger-ui.html) | [`/api/v1/actuator/health`](http://localhost:8091/api/v1/actuator/health) |
 
-* **Especificación OpenAPI (Contrato JSON Schema):** `http://localhost:8091/v3/api-docs` (o `/v3/api-docs` en los dominios de PROD y QA).
+* **Especificación OpenAPI (Contrato JSON Schema):** `http://localhost:8091/api/v1/v3/api-docs`.
 
 
 <div align="center">
@@ -271,12 +271,12 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
           <strong><font color="#5600EF" size="3">DOCUMENTACIÓN SWAGGER OPENAPI UI ACTIVA</font></strong>
         </p>
         <p>
-          <sub>Pega aquí la captura de pantalla de la interfaz interactiva corriendo en <code>http://localhost:808X/swagger-ui.html</code> mostrando los endpoints del controlador.</sub>
+          <sub>Pega aquí la captura de pantalla de la interfaz interactiva corriendo en <code>http://localhost:8091/swagger-ui.html</code> mostrando los endpoints del controlador.</sub>
         </p>
         <p>
 <!-- Al generar tu captura, descomenta la siguiente línea y guarda la imagen en la ruta indicada: -->
-<!-- <img src="docs/evidencias/swagger-ui.png" width="90%" alt="Evidencia Swagger UI" /><br /> -->
-          <code>[ Pegar captura de Swagger UI aquí · docs/evidencias/swagger-ui.png ]</code>
+ <img src="docs/evidencias/swagger-ui.png" width="90%" alt="Evidencia Swagger UI" /><br />
+          <code></code>
         </p>
       </td>
     </tr>
@@ -314,13 +314,14 @@ El stack del microservicio cumple con el estándar unificado de arquitectura de 
 | **Lenguaje Core**          | Java LTS          | `21`     | Virtual Threads (Project Loom) para concurrencia masiva I/O sin saturar hilos del OS.          |
 | **Framework Empresarial**  | Spring Boot       | `3.2.9`  | Gestión declarativa de configuración, ecosistema nativo Spring Data y Spring AMQP.           |
 | **Base de Datos**          | PostgreSQL        | `16`     | Integridad transaccional ACID, llaves UUIDv7 y soporte de extensiones espaciales/GIN.          |
-| **Migraciones de BD**      | Flyway            | `10.x`   | Control de versiones reproducible de scripts SQL (`V1__init.sql`) en arranque de contenedor. |
-| **Broker de Mensajería**  | RabbitMQ          | `3.12+`  | Desacoplamiento temporal de microservicios mediante Topic Exchanges durables.                  |
-| **Caché en Memoria**      | Redis             | `7.x`    | Caché L2 para consultas de alto tráfico y candados distribuidos (Redlock).                   |
-| **Mapeo de DTOs**          | MapStruct         | `1.5.x`  | Generación de mappers en tiempo de compilación con cero sobrecarga de reflection.            |
-| **Testing Core**           | JUnit 5 + Mockito | `5.10.x` | Pruebas unitarias sobre el núcleo de dominio sin inicializar el contenedor Spring.            |
-| **Testing Integración**   | Testcontainers    | `1.19.x` | Instanciación automática de PostgreSQL y RabbitMQ en Docker durante `mvn verify`.          |
-| **Métricas de Cobertura** | JaCoCo Plugin     | `0.8.11` | Verificación estricta de cobertura mínima (≥ 85%) como regla de fallo en el build.     |
+| **Migraciones de BD**      | Flyway            | `10.10.0`   | Control de versiones reproducible de scripts SQL (`V1__init.sql`) en arranque de contenedor. |
+| **Broker de Mensajería**  | RabbitMQ          | `3.12.14-alpine`  | Desacoplamiento temporal de microservicios mediante Topic Exchanges durables.                  |
+| **Procesador de Boilerplate**      | Project Lombok             | `1.18.38`    | Reducción declarativa de código con soporte completo para compiladores Java 21+.|
+| **Mapeo de DTOs**          | MapStruct         | `1.5.5.Final`  | Generación de mappers en tiempo de compilación con cero sobrecarga de reflection.            |
+| **Testing Core**           | JUnit 5 + Mockito | `5.10.3` | Pruebas unitarias sobre el núcleo de dominio sin inicializar el contenedor Spring.            |
+| **Testing Integración**   | Testcontainers    | `1.19.8` | Instanciación automática de PostgreSQL y RabbitMQ en Docker durante `mvn verify`.          |
+| **Métricas de Cobertura** | JaCoCo Plugin     | `0.8.12` | Verificación estricta de cobertura mínima (≥ 85%) como regla de fallo en el build.     |
+| **Documentación de API** | SpringDoc OpenAPI Starter  | `2.5.0` | Generación dinámica de especificación Swagger UI interactiva y contrato OpenAPI 3. |
 
 ---
 
@@ -366,8 +367,8 @@ curl -s http://localhost:8091/actuator/health | jq .
         </p>
         <p>
 <!-- Al generar tu captura, descomenta la siguiente línea y guarda la imagen en la ruta indicada: -->
-<!-- <img src="docs/evidencias/docker-compose-ps.png" width="90%" alt="Docker Compose PS" /><br /> -->
-          <code>[ Pegar captura de Docker compose ps aquí · docs/evidencias/docker-compose-ps.png ]</code>
+<img src="docs/evidencias/docker-compose-ps.png" width="90%" alt="Docker Compose PS" /><br /> -->
+          <code></code>
         </p>
       </td>
     </tr>
@@ -389,15 +390,15 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 | `SPRING_PROFILES_ACTIVE` | Perfil de configuración Spring Boot activo  | `dev`                     |        Sí        |
 | `DB_HOST`                | Hostname o IP del servidor PostgreSQL        | `localhost`               |        Sí        |
 | `DB_PORT`                | Puerto de conexión a PostgreSQL             | `5432`                    |        Sí        |
-| `DB_NAME`                | Nombre de la base de datos aislada           | `<nombre_db>_db`          |        Sí        |
+| `DB_NAME`                | Nombre de la base de datos aislada           | `styleradar_statistics`          |        Sí        |
 | `DB_USER`                | Usuario de conexión a la base de datos      | `styleradar_user`         |        Sí        |
-| `DB_PASSWORD`            | Contraseña del usuario de base de datos     | `secret_dev_pass`         |        Sí        |
+| `DB_PASSWORD`            | Contraseña del usuario de base de datos     | `styleradar_secret`         |        Sí        |
 | `RABBITMQ_HOST`          | Hostname del broker de mensajería           | `localhost`               |        Sí        |
 | `RABBITMQ_PORT`          | Puerto AMQP de RabbitMQ                      | `5672`                    |        Sí        |
 | `RABBITMQ_USERNAME`      | Usuario de conexión a RabbitMQ              | `guest`                   |        Sí        |
 | `RABBITMQ_PASSWORD`      | Contraseña de conexión a RabbitMQ          | `guest`                   |        Sí        |
 | `REDIS_HOST`             | Hostname del servidor de caché Redis        | `localhost`               |        No        |
-| `JWT_PUBLIC_KEY`         | Clave pública RSA/RS256 para validar tokens | `<PATH_OR_PEM_VALUE>`     |        Sí        |
+| `JWT_PUBLIC_KEY`         | Clave pública RSA/RS256 para validar tokens | `styleradar-ms-auth`     |        Sí        |
 
 <details>
 <summary><b>Click para copiar la Plantilla de Archivo .env.example</b></summary>
@@ -408,28 +409,19 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 # ==============================================================================
 # STYLERADAR · VARIABLES DE ENTORNO LOCALES (.env)
 # ==============================================================================
+
 SERVER_PORT=8091
 SPRING_PROFILES_ACTIVE=dev
-
-# Persistencia PostgreSQL
 DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=<nombre_db>_db
+DB_PORT=5434
+DB_NAME=styleradar_statistics
 DB_USER=styleradar_user
 DB_PASSWORD=styleradar_secret
-
-# Event Broker RabbitMQ
 RABBITMQ_HOST=localhost
-RABBITMQ_PORT=5672
+RABBITMQ_PORT=5674
 RABBITMQ_USERNAME=guest
 RABBITMQ_PASSWORD=guest
-
-# Caché Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Seguridad JWT
-JWT_PUBLIC_KEY=classpath:keys/public-key.pem
+JWT_ISSUER=styleradar-ms-auth
 ```
 
 </details>
@@ -541,8 +533,8 @@ flowchart LR
         </p>
         <p>
 <!-- Al generar tu captura, descomenta la siguiente línea y guarda la imagen en la ruta indicada: -->
-<!-- <img src="docs/evidencias/pipeline-ci-cd.png" width="90%" alt="Pipeline CI/CD" /><br /> -->
-          <code>[ Pegar captura del Pipeline CI/CD en verde aquí · docs/evidencias/pipeline-ci-cd.png ]</code>
+<img src="docs/evidencias/pipeline-ci-cd.png" width="90%" alt="Pipeline CI/CD" /><br /> 
+          <code></code>
         </p>
       </td>
     </tr>
