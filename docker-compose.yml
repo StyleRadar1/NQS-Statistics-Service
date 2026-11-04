@@ -10,9 +10,9 @@ services:
     container_name: sr-ms-estadisticas
     restart: always
     ports:
-      - "8091:8091"
+      - "8420:8420"
     environment:
-      - SERVER_PORT=8091
+      - SERVER_PORT=8420
       - SPRING_PROFILES_ACTIVE=dev
       - DB_HOST=postgres-estadisticas
       - DB_PORT=5432

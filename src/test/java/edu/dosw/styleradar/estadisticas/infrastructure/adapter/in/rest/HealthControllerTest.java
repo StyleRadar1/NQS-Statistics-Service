@@ -20,6 +20,6 @@ class HealthControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"))
             .andExpect(jsonPath("$.service").value("ms-estadisticas"))
-            .andExpect(jsonPath("$.port").value(8091));
+            .andExpect(jsonPath("$.port").value(8420));
     }
 }
