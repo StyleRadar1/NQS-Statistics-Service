@@ -79,6 +79,7 @@ class TableroDtoMapperTest {
 
         assertEquals(1, mapper.toIndicadorDtoList(List.of(indicador)).size());
         assertEquals(1, mapper.toGraficaDtoList(List.of(grafica)).size());
+        assertEquals(1, mapper.toSerieDtoList(List.of(serie)).size());
     }
 
     @Test
@@ -93,5 +94,6 @@ class TableroDtoMapperTest {
         assertNull(mapper.toDto((Punto) null));
         assertTrue(mapper.toIndicadorDtoList(null).isEmpty());
         assertTrue(mapper.toGraficaDtoList(null).isEmpty());
+        assertTrue(mapper.toSerieDtoList(null).isEmpty());
     }
 }

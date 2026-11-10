@@ -1,5 +1,6 @@
 package edu.dosw.styleradar.estadisticas.infrastructure.exception;
 
+import edu.dosw.styleradar.estadisticas.domain.exception.GraficaNotFoundException;
 import edu.dosw.styleradar.estadisticas.domain.exception.InvalidPeriodoException;
 import edu.dosw.styleradar.estadisticas.domain.exception.TableroNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +66,16 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("No encontrado", response.getBody().get("message"));
+    }
+
+    @Test
+    @DisplayName("Debe manejar GraficaNotFoundException retornando 404")
+    void testHandleGraficaNotFound() {
+        GraficaNotFoundException ex = new GraficaNotFoundException("Gráfica no encontrada");
+        ResponseEntity<Map<String, Object>> response = handler.handleGraficaNotFound(ex, request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Gráfica no encontrada", response.getBody().get("message"));
     }
 
     @Test

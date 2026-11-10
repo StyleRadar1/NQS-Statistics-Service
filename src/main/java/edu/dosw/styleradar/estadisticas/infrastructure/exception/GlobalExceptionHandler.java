@@ -1,5 +1,6 @@
 package edu.dosw.styleradar.estadisticas.infrastructure.exception;
 
+import edu.dosw.styleradar.estadisticas.domain.exception.GraficaNotFoundException;
 import edu.dosw.styleradar.estadisticas.domain.exception.InvalidPeriodoException;
 import edu.dosw.styleradar.estadisticas.domain.exception.TableroNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +45,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TableroNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleTableroNotFound(
             TableroNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(GraficaNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleGraficaNotFound(
+            GraficaNotFoundException ex,
             HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());

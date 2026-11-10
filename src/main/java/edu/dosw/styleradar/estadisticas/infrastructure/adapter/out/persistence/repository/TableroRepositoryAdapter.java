@@ -9,13 +9,14 @@ import edu.dosw.styleradar.estadisticas.domain.model.Serie;
 import edu.dosw.styleradar.estadisticas.domain.model.Tablero;
 import edu.dosw.styleradar.estadisticas.domain.model.TipoTablero;
 import edu.dosw.styleradar.estadisticas.domain.model.UnidadMedida;
+import edu.dosw.styleradar.estadisticas.domain.port.out.ConsultarTemporalidadPort;
 import edu.dosw.styleradar.estadisticas.domain.port.out.TableroRepositoryPort;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.GraficaEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.IndicadorEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.PuntoEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.SerieEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.TableroEntity;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +28,29 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
-public class TableroRepositoryAdapter implements TableroRepositoryPort {
+public class TableroRepositoryAdapter implements TableroRepositoryPort, ConsultarTemporalidadPort {
 
     private final TableroJpaRepository tableroJpaRepository;
     private final IndicadorJpaRepository indicadorJpaRepository;
+    private final GraficaJpaRepository graficaJpaRepository;
+    private final PuntoJpaRepository puntoJpaRepository;
+
+    @Autowired
+    public TableroRepositoryAdapter(
+            TableroJpaRepository tableroJpaRepository,
+            IndicadorJpaRepository indicadorJpaRepository,
+            GraficaJpaRepository graficaJpaRepository,
+            PuntoJpaRepository puntoJpaRepository
+    ) {
+        this.tableroJpaRepository = tableroJpaRepository;
+        this.indicadorJpaRepository = indicadorJpaRepository;
+        this.graficaJpaRepository = graficaJpaRepository;
+        this.puntoJpaRepository = puntoJpaRepository;
+    }
+
+    public TableroRepositoryAdapter(TableroJpaRepository tableroJpaRepository, IndicadorJpaRepository indicadorJpaRepository) {
+        this(tableroJpaRepository, indicadorJpaRepository, null, null);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -53,6 +72,53 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
     public List<Indicador> findIndicadoresByTableroIdAndPeriodo(UUID tableroId, LocalDate fechaInicio, LocalDate fechaFin) {
         List<IndicadorEntity> entities = indicadorJpaRepository.findByTableroIdAndPeriodo(tableroId, fechaInicio, fechaFin);
         return entities.stream().map(this::toDomainIndicador).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Grafica> findGraficaById(UUID id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return graficaJpaRepository.findById(id).map(this::toDomainGrafica);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Grafica> findGraficaByTableroIdAndTitulo(UUID tableroId, String titulo) {
+        if (tableroId == null || titulo == null) {
+            return Optional.empty();
+        }
+        return graficaJpaRepository.findByTableroIdAndTitulo(tableroId, titulo).map(this::toDomainGrafica);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Tablero> findTableroByTipoAndIdDueño(TipoTablero tipo, UUID idDueño) {
+        return findByTipoAndIdDueño(tipo, idDueño);
+    }
+
+    @Override
+    @Transactional
+    public Grafica saveGrafica(Grafica grafica, UUID tableroId) {
+        if (grafica == null || tableroId == null) {
+            throw new IllegalArgumentException("La gráfica y el id del tablero son requeridos");
+        }
+        TableroEntity tableroEntity = tableroJpaRepository.findById(tableroId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el tablero con id: " + tableroId));
+        GraficaEntity entity = toEntityGrafica(grafica, tableroEntity);
+        GraficaEntity saved = graficaJpaRepository.save(entity);
+        return toDomainGrafica(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Punto> findPuntosBySerieIdAndPeriodo(UUID serieId, LocalDate fechaInicio, LocalDate fechaFin) {
+        if (serieId == null || fechaInicio == null || fechaFin == null) {
+            return Collections.emptyList();
+        }
+        return puntoJpaRepository.findBySerieIdAndPeriodo(serieId, fechaInicio, fechaFin)
+                .stream().map(this::toDomainPunto).toList();
     }
 
     public Tablero toDomain(TableroEntity entity) {
@@ -109,7 +175,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
                 .build();
     }
 
-    private Grafica toDomainGrafica(GraficaEntity entity) {
+    public Grafica toDomainGrafica(GraficaEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -125,7 +191,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
                 .build();
     }
 
-    private Serie toDomainSerie(SerieEntity entity) {
+    public Serie toDomainSerie(SerieEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -142,7 +208,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
                 .build();
     }
 
-    private Punto toDomainPunto(PuntoEntity entity) {
+    public Punto toDomainPunto(PuntoEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -200,7 +266,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
                 .build();
     }
 
-    private GraficaEntity toEntityGrafica(Grafica domain, TableroEntity tableroEntity) {
+    public GraficaEntity toEntityGrafica(Grafica domain, TableroEntity tableroEntity) {
         if (domain == null) {
             return null;
         }
@@ -221,7 +287,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
         return entity;
     }
 
-    private SerieEntity toEntitySerie(Serie domain, GraficaEntity graficaEntity) {
+    public SerieEntity toEntitySerie(Serie domain, GraficaEntity graficaEntity) {
         if (domain == null) {
             return null;
         }
@@ -243,7 +309,7 @@ public class TableroRepositoryAdapter implements TableroRepositoryPort {
         return entity;
     }
 
-    private PuntoEntity toEntityPunto(Punto domain, SerieEntity serieEntity) {
+    public PuntoEntity toEntityPunto(Punto domain, SerieEntity serieEntity) {
         if (domain == null) {
             return null;
         }

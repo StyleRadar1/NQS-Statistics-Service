@@ -285,9 +285,14 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
 
 ### Tabla de Endpoints Expuestos
 
-|  Método  | Endpoint                      | Descripción                               | Rol Requerido         |       Códigos HTTP       |
-| :--------: | :---------------------------- | :----------------------------------------- | :-------------------- | :-----------------------: |
-|  `GET`  | `/api/v1/estadisticas/health` | Health Check y estado del microservicio    | Público              |          `200`          |
+|  Método  | Endpoint                                                        | Descripción                                                                 | Rol Requerido         |       Códigos HTTP       |
+| :--------: | :-------------------------------------------------------------- | :-------------------------------------------------------------------------- | :-------------------- | :-----------------------: |
+|  `GET`  | `/api/v1/health`                                                | Health Check y estado del microservicio                                     | Público              |          `200`          |
+|  `GET`  | `/api/v1/estadisticas/tableros/{tipo}/{idDueño}`                | Consultar indicadores del tablero por tipo y dueño (HU-04)                 | Administrador Almacén |    `200`, `400`, `404`    |
+|  `GET`  | `/api/v1/estadisticas/graficas/{id}/series`                     | Consultar series de una gráfica o actividad diaria de la tienda (HU-05)     | Administrador Almacén | `200`, `400`, `404`, `500` |
+|  `GET`  | `/api/v1/estadisticas/graficas/{id}`                            | Consultar gráfica completa con sus series temporales                        | Administrador Almacén |    `200`, `400`, `404`    |
+|  `GET`  | `/api/v1/estadisticas/graficas/tiendas/{idTienda}/actividad-diaria` | Consultar actividad diaria de la tienda (HU-05)                         | Administrador Almacén |       `200`, `400`       |
+|  `GET`  | `/api/v1/estadisticas/graficas/tiendas/{idTienda}/actividad-diaria/series` | Consultar lista de series de actividad diaria de la tienda (HU-05) | Administrador Almacén |       `200`, `400`       |
 
 ---
 

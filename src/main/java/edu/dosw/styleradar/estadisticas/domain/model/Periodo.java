@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Getter
 @EqualsAndHashCode
@@ -29,6 +30,10 @@ public class Periodo {
 
     public long getDias() {
         return ChronoUnit.DAYS.between(inicio, fin) + 1;
+    }
+
+    public List<LocalDate> generarDias() {
+        return inicio.datesUntil(fin.plusDays(1)).toList();
     }
 
     public Periodo calcularPeriodoAnterior() {

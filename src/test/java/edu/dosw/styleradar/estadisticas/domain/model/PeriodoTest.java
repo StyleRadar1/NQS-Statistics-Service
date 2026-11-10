@@ -58,6 +58,35 @@ class PeriodoTest {
     }
 
     @Test
+    @DisplayName("Debe generar la lista de días ordenada e inclusiva")
+    void testGenerarDias() {
+        LocalDate inicio = LocalDate.of(2026, 11, 1);
+        LocalDate fin = LocalDate.of(2026, 11, 5);
+        Periodo periodo = new Periodo(inicio, fin);
+
+        java.util.List<LocalDate> dias = periodo.generarDias();
+
+        assertEquals(5, dias.size());
+        assertEquals(LocalDate.of(2026, 11, 1), dias.get(0));
+        assertEquals(LocalDate.of(2026, 11, 2), dias.get(1));
+        assertEquals(LocalDate.of(2026, 11, 3), dias.get(2));
+        assertEquals(LocalDate.of(2026, 11, 4), dias.get(3));
+        assertEquals(LocalDate.of(2026, 11, 5), dias.get(4));
+    }
+
+    @Test
+    @DisplayName("Debe generar un único día si inicio y fin son iguales")
+    void testGenerarDiasMismoDia() {
+        LocalDate fecha = LocalDate.of(2026, 11, 10);
+        Periodo periodo = new Periodo(fecha, fecha);
+
+        java.util.List<LocalDate> dias = periodo.generarDias();
+
+        assertEquals(1, dias.size());
+        assertEquals(fecha, dias.get(0));
+    }
+
+    @Test
     @DisplayName("Debe cumplir equals, hashCode y toString")
     void testEqualsHashCodeToString() {
         LocalDate inicio = LocalDate.of(2026, 10, 1);

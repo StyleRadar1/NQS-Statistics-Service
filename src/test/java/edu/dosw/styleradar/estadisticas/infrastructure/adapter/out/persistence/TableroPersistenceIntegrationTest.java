@@ -11,7 +11,9 @@ import edu.dosw.styleradar.estadisticas.domain.model.TipoTablero;
 import edu.dosw.styleradar.estadisticas.domain.model.UnidadMedida;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.IndicadorEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.TableroEntity;
+import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.GraficaJpaRepository;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.IndicadorJpaRepository;
+import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.PuntoJpaRepository;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.TableroJpaRepository;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.TableroRepositoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,11 +40,17 @@ class TableroPersistenceIntegrationTest {
     @Autowired
     private IndicadorJpaRepository indicadorJpaRepository;
 
+    @Autowired
+    private GraficaJpaRepository graficaJpaRepository;
+
+    @Autowired
+    private PuntoJpaRepository puntoJpaRepository;
+
     private TableroRepositoryAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new TableroRepositoryAdapter(tableroJpaRepository, indicadorJpaRepository);
+        adapter = new TableroRepositoryAdapter(tableroJpaRepository, indicadorJpaRepository, graficaJpaRepository, puntoJpaRepository);
     }
 
     @Test

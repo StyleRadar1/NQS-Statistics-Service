@@ -98,6 +98,13 @@ public class TableroDtoMapper {
                 .build();
     }
 
+    public List<SerieResponseDto> toSerieDtoList(List<Serie> series) {
+        if (series == null) {
+            return Collections.emptyList();
+        }
+        return series.stream().map(this::toDto).toList();
+    }
+
     public SerieResponseDto toDto(Serie domain) {
         if (domain == null) {
             return null;
