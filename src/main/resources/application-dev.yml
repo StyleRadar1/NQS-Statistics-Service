@@ -1,21 +1,30 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5434}/${DB_NAME:styleradar_donations}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5435}/${DB_NAME:styleradar_statistics}
     username: ${DB_USER:styleradar_user}
     password: ${DB_PASSWORD:styleradar_secret}
   jpa:
     show-sql: true
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5674}
-    username: ${RABBITMQ_USERNAME:guest}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:${RABBITMQ_USERNAME:guest}}
     password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    ssl:
+      enabled: ${RABBITMQ_SSL_ENABLED:false}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 logging:
   level:
-    edu.dosw.styleradar.donaciones: DEBUG
+    edu.dosw.styleradar.estadisticas: DEBUG
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
