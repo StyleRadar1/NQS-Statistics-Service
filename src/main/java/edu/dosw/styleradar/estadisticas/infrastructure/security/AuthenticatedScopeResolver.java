@@ -17,19 +17,19 @@ public class AuthenticatedScopeResolver {
         AuthenticatedActor actor = authenticatedActor();
         ScopeType requestedType = metricCode.scopeType();
         return switch (actor.role()) {
-            case "STORE_ADMIN" -> {
+            case "STORE_ADMIN", "ADMIN_ALMACEN" -> {
                 if (requestedType != ScopeType.STORE) {
                     throw unauthorized("STORE_ADMIN can only access STORE metrics");
                 }
                 yield scope(actor.storeId(), ScopeType.STORE);
             }
-            case "FOUNDATION_ADMIN" -> {
+            case "FOUNDATION_ADMIN", "REPRESENTANTE_FUNDACION" -> {
                 if (requestedType != ScopeType.FOUNDATION) {
                     throw unauthorized("FOUNDATION_ADMIN can only access FOUNDATION metrics");
                 }
                 yield scope(actor.foundationId(), ScopeType.FOUNDATION);
             }
-            case "PLATFORM_ADMIN" -> {
+            case "PLATFORM_ADMIN", "ADMIN_STYLERADAR" -> {
                 if (requestedType != ScopeType.PLATFORM) {
                     throw unauthorized("PLATFORM_ADMIN can only access PLATFORM metrics");
                 }

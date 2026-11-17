@@ -19,10 +19,21 @@ spring:
       port: ${REDIS_PORT:6379}
 
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
+    host: ${RABBITMQ_HOST:styleradar-rabbitmq-qa.northcentralus.cloudapp.azure.com}
+    port: ${RABBITMQ_PORT:5671}
+    username: ${RABBITMQ_USER:${RABBITMQ_USERNAME:}}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    ssl:
+      enabled: ${RABBITMQ_SSL_ENABLED:true}
+      trust-store: ${RABBITMQ_TRUSTSTORE:file:/app/rabbitmq-truststore.jks}
+      trust-store-password: ${RABBITMQ_TRUSTSTORE_PASSWORD:changeit}
+      trust-store-type: ${RABBITMQ_TRUSTSTORE_TYPE:PKCS12}
+      verify-hostname: ${RABBITMQ_SSL_VERIFY_HOSTNAME:true}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:}
 
   jpa:
     open-in-view: false

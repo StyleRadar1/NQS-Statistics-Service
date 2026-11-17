@@ -8,6 +8,9 @@ import edu.dosw.styleradar.estadisticas.domain.port.in.ConsolidateCountersUseCas
 import edu.dosw.styleradar.estadisticas.domain.port.in.RegisterAnalyticsEventUseCase;
 import edu.dosw.styleradar.estadisticas.infrastructure.scheduling.CounterConsolidationScheduler;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,6 +18,7 @@ import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -96,5 +100,22 @@ class AnalyticsMessagingAndSchedulingTest {
         scheduler.consolidateCounters();
 
         verify(consolidateUseCase).consolidate();
+    }
+
+    @Test
+    void configuresOfficialExchangesAndDeadLetterTopology() {
+        RabbitMqConfig config = new RabbitMqConfig();
+        TopicExchange exchange = config.analyticsExchange();
+        DirectExchange dlx = config.deadLetterExchange();
+        Queue queue = config.analyticsQueue();
+        Queue dlq = config.analyticsDeadLetterQueue();
+
+        assertEquals("styleradar.exchange", exchange.getName());
+        assertTrue(exchange.isDurable());
+        assertEquals("styleradar.dlx", dlx.getName());
+        assertTrue(dlx.isDurable());
+        assertEquals("statistics.analytics.events", queue.getName());
+        assertEquals("styleradar.dlx", queue.getArguments().get("x-dead-letter-exchange"));
+        assertEquals("statistics.analytics.events.dlq", dlq.getName());
     }
 }
