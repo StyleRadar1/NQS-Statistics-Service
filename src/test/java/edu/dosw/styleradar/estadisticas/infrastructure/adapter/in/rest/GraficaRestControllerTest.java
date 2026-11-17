@@ -7,6 +7,7 @@ import edu.dosw.styleradar.estadisticas.domain.model.Punto;
 import edu.dosw.styleradar.estadisticas.domain.model.Serie;
 import edu.dosw.styleradar.estadisticas.domain.model.TipoSerie;
 import edu.dosw.styleradar.estadisticas.domain.port.in.ConsultarGraficaUseCase;
+import edu.dosw.styleradar.estadisticas.infrastructure.security.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GraficaRestController.class)
-@Import(TableroDtoMapper.class)
+@Import({TableroDtoMapper.class, SecurityConfig.class})
 class GraficaRestControllerTest {
 
     @Autowired

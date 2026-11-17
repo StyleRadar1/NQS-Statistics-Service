@@ -2,7 +2,10 @@ package edu.dosw.styleradar.estadisticas.infrastructure.exception;
 
 import edu.dosw.styleradar.estadisticas.domain.exception.GraficaNotFoundException;
 import edu.dosw.styleradar.estadisticas.domain.exception.InvalidPeriodoException;
+import edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException;
 import edu.dosw.styleradar.estadisticas.domain.exception.TableroNotFoundException;
+import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
+import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidPeriodoException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidPeriodo(
             InvalidPeriodoException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UnauthorizedScopeException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorizedScope(
+            UnauthorizedScopeException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UnsupportedMetricScopeException.class)
+    public ResponseEntity<Map<String, Object>> handleUnsupportedMetricScope(
+            UnsupportedMetricScopeException ex,
+            HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(InvalidTimeSeriesRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidTimeSeriesRequest(
+            InvalidTimeSeriesRequestException ex,
             HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());

@@ -260,6 +260,8 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
 | **Desarrollo Local (DEV)** | Local | Entorno de desarrollo local en máquina | `http://localhost:8420` | [Swagger UI Local](http://localhost:8420/swagger-ui.html) | [`/api/v1/actuator/health`](http://localhost:8420/api/v1/actuator/health) |
 
 * **Especificación OpenAPI (Contrato JSON Schema):** `http://localhost:8420/api/v1/v3/api-docs`.
+* **Conteo en tiempo real:** `GET /api/v1/statistics/realtime/{metricCode}`. Los valores se leen desde Redis con la clave `statistics:realtime:active:{scopeType}:{scopeId}:{metricCode}`; los productores de presencia deben actualizar esta clave con TTL.
+* **Ranking de prendas:** `GET /api/v1/statistics/rankings/STORE_GARMENTS_BY_SAVES`. Devuelve las seis prendas con más guardados de la tienda autenticada, acumuladas históricamente; si no hay prendas publicadas, devuelve `items: []` y el mensaje `No hay prendas publicadas`.
 
 
 <div align="center">
@@ -293,6 +295,12 @@ La documentación interactiva OpenAPI 3.0 y los contratos de ejecución se encue
 |  `GET`  | `/api/v1/estadisticas/graficas/{id}`                            | Consultar gráfica completa con sus series temporales                        | Administrador Almacén |    `200`, `400`, `404`    |
 |  `GET`  | `/api/v1/estadisticas/graficas/tiendas/{idTienda}/actividad-diaria` | Consultar actividad diaria de la tienda (HU-05)                         | Administrador Almacén |       `200`, `400`       |
 |  `GET`  | `/api/v1/estadisticas/graficas/tiendas/{idTienda}/actividad-diaria/series` | Consultar lista de series de actividad diaria de la tienda (HU-05) | Administrador Almacén |       `200`, `400`       |
+|  `GET`  | `/api/v1/statistics/time-series/{metricCode}`                  | Consultar series temporales diarias o mensuales con relleno de ceros (HU-77, HU-83, HU-88, HU-89.1) | Admin Tienda / Fundación / Plataforma | `200`, `400`, `403` |
+|  `GET`  | `/api/v1/statistics/realtime/{metricCode}`                     | Consultar conteo activo en tiempo real de visitantes o sesiones (HU-78, HU-86.1, HU-90) | Admin Tienda / Plataforma | `200`, `400`, `403` |
+|  `GET`  | `/api/v1/statistics/goals/{metricCode}`                        | Consultar avance frente a la meta semanal o mensual definida (HU-79, HU-84, HU-89.2) | Admin Tienda / Fundación / Plataforma | `200`, `400`, `403` |
+|  `GET`  | `/api/v1/statistics/rankings/{metricCode}`                     | Consultar las seis prendas más guardadas de la tienda autenticada (HU-80)   | Administrador de tienda | `200`, `400`, `403` |
+|  `GET`  | `/api/v1/statistics/distributions/{metricCode}`                | Consultar distribución por estado, tipo de prenda o plan (HU-81, HU-85, HU-91) | Admin Tienda / Fundación / Plataforma | `200`, `400`, `403` |
+|  `GET`  | `/api/v1/statistics/moderation/pending`                        | Consultar publicaciones pendientes de moderación agrupadas por origen y publicador (HU-87) | Administrador Plataforma | `200`, `403` |
 
 ---
 
@@ -319,6 +327,7 @@ El stack del microservicio cumple con el estándar unificado de arquitectura de 
 | **Lenguaje Core**          | Java LTS          | `21`     | Virtual Threads (Project Loom) para concurrencia masiva I/O sin saturar hilos del OS.          |
 | **Framework Empresarial**  | Spring Boot       | `3.2.9`  | Gestión declarativa de configuración, ecosistema nativo Spring Data y Spring AMQP.           |
 | **Base de Datos**          | PostgreSQL        | `16`     | Integridad transaccional ACID, llaves UUIDv7 y soporte de extensiones espaciales/GIN.          |
+| **Contadores en tiempo real** | Redis            | —        | Conteos activos por métrica y alcance, expuestos con TTL para expirar sesiones y visitantes.   |
 | **Migraciones de BD**      | Flyway            | `10.10.0`   | Control de versiones reproducible de scripts SQL (`V1__init.sql`) en arranque de contenedor. |
 | **Broker de Mensajería**  | RabbitMQ          | `3.12.14-alpine`  | Desacoplamiento temporal de microservicios mediante Topic Exchanges durables.                  |
 | **Procesador de Boilerplate**      | Project Lombok             | `1.18.38`    | Reducción declarativa de código con soporte completo para compiladores Java 21+.|

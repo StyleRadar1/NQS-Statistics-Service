@@ -13,6 +13,17 @@ spring:
     password: ${DB_PASSWORD:styleradar_secret}
     driver-class-name: org.postgresql.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
   jpa:
     open-in-view: false
     hibernate:
@@ -34,7 +45,9 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
     tryItOutEnabled: true
-  packages-to-scan: edu.dosw.styleradar.estadisticas.infrastructure.adapter.in.rest
+  packages-to-scan:
+    - edu.dosw.styleradar.estadisticas.infrastructure.adapter.in.rest
+    - edu.dosw.styleradar.estadisticas.infrastructure.web.controller
 
 management:
   endpoints:
