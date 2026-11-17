@@ -20,7 +20,8 @@ public enum MetricCode {
     PLATFORM_STORES_BY_PLAN(ScopeType.PLATFORM, TimeGranularity.MONTH),
     STORE_REALTIME_VISITORS(ScopeType.STORE, TimeGranularity.DAY, true),
     PLATFORM_REALTIME_USERS(ScopeType.PLATFORM, TimeGranularity.DAY, true),
-    PLATFORM_ACTIVE_USERS(ScopeType.PLATFORM, TimeGranularity.DAY, true);
+    PLATFORM_ACTIVE_USERS(ScopeType.PLATFORM, TimeGranularity.DAY, true),
+    PLATFORM_ALERTS_CREATED(ScopeType.PLATFORM, TimeGranularity.DAY);
 
     private final ScopeType scopeType;
     private final TimeGranularity granularity;
