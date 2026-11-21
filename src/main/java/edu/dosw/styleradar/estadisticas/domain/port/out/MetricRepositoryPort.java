@@ -1,5 +1,6 @@
 package edu.dosw.styleradar.estadisticas.domain.port.out;
 
+import edu.dosw.styleradar.estadisticas.domain.model.CategoryCode;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.GarmentSavesCount;
 import edu.dosw.styleradar.estadisticas.domain.model.DistributionCount;
@@ -31,5 +32,39 @@ public interface MetricRepositoryPort {
             BigDecimal increment
     ) {
         throw new UnsupportedOperationException("Daily metric increments are not supported");
+    }
+
+    default void upsertGoalTarget(
+            MetricCode metricCode,
+            Scope scope,
+            LocalDate periodStartDate,
+            BigDecimal targetValue
+    ) {
+        throw new UnsupportedOperationException("Goal upserts are not supported");
+    }
+
+    default BigDecimal sumAllDailyPoints(MetricCode metricCode, Scope scope) {
+        throw new UnsupportedOperationException("Total metric sums are not supported");
+    }
+
+    default void adjustDistributionCount(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode categoryCode,
+            long delta
+    ) {
+        throw new UnsupportedOperationException("Distribution count updates are not supported");
+    }
+
+    default void upsertItemDailyIncrement(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode categoryCode,
+            String itemId,
+            String itemName,
+            LocalDate day,
+            long delta
+    ) {
+        throw new UnsupportedOperationException("Item daily metric updates are not supported");
     }
 }

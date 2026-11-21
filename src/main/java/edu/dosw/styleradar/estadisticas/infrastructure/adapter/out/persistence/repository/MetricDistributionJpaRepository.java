@@ -4,6 +4,7 @@ import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.e
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MetricDistributionJpaRepository extends JpaRepository<MetricDistributionEntity, UUID> {
@@ -12,4 +13,10 @@ public interface MetricDistributionJpaRepository extends JpaRepository<MetricDis
             String scopeType,
             String scopeId,
             String metricCode);
+
+    Optional<MetricDistributionEntity> findByScopeTypeAndScopeIdAndMetricCodeAndCategoryCode(
+            String scopeType,
+            String scopeId,
+            String metricCode,
+            String categoryCode);
 }

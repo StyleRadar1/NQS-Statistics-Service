@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/statistics/realtime")
-@Tag(name = "Real-time counts", description = "Active visitors and platform users")
+@RequestMapping("/statistics/realtime")
+@Tag(name = "Real-Time Counts", description = "Active visitors and platform users")
 public class RealTimeCountRestController {
 
     private final QueryRealTimeCountUseCase queryRealTimeCountUseCase;
@@ -34,7 +34,7 @@ public class RealTimeCountRestController {
     }
 
     @GetMapping("/{metricCode}")
-    @Operation(summary = "Query the current active visitor or user count")
+    @Operation(summary = "Query the current count of active visitors or users")
     public ResponseEntity<RealTimeCountResponseDto> query(
             @Parameter(description = "Supported real-time metric code", required = true)
             @PathVariable MetricCode metricCode

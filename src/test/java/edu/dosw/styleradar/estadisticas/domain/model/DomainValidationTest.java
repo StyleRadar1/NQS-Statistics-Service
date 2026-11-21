@@ -107,5 +107,54 @@ class DomainValidationTest {
 
         assertThrows(IllegalArgumentException.class, () -> new PendingModeration(List.of(), -1, "msg"));
         assertThrows(IllegalArgumentException.class, () -> new PendingModeration(List.of(), 0, " "));
+
+        assertEquals(ComparisonWindow.DIAS_7, ComparisonWindow.fromCode("7_DIAS"));
+        assertEquals(ComparisonWindow.DIAS_30, ComparisonWindow.fromCode("30_DIAS"));
+        assertEquals(ComparisonWindow.DIAS_90, ComparisonWindow.fromCode("90_DIAS"));
+        assertThrows(edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException.class,
+                () -> ComparisonWindow.fromCode(""));
+        assertThrows(edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException.class,
+                () -> ComparisonWindow.fromCode("INVALID"));
+
+        Period p1 = new Period(LocalDate.of(2026, 11, 15), LocalDate.of(2026, 11, 21));
+        Period p0 = new Period(LocalDate.of(2026, 11, 8), LocalDate.of(2026, 11, 14));
+        assertThrows(IllegalArgumentException.class, () -> new MetricSummaryWithVariation(
+                MetricCode.STORE_PAGE_VISITS, storeScope, ComparisonWindow.DIAS_7, p1, p0,
+                BigDecimal.valueOf(-1), BigDecimal.ZERO, BigDecimal.ZERO, VariationStatus.CALCULATED, null));
+        assertThrows(IllegalArgumentException.class, () -> new MetricSummaryWithVariation(
+                MetricCode.STORE_PAGE_VISITS, storeScope, ComparisonWindow.DIAS_7, p1, p0,
+                BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.TEN, VariationStatus.NOT_CALCULABLE_PREVIOUS_ZERO, "msg"));
+        assertThrows(IllegalArgumentException.class, () -> new MetricSummaryWithVariation(
+                MetricCode.STORE_PAGE_VISITS, storeScope, ComparisonWindow.DIAS_7, p1, p0,
+                BigDecimal.ONE, BigDecimal.ONE, null, VariationStatus.CALCULATED, null));
+
+        assertEquals(BigDecimal.TEN, new MetricTotal(
+                MetricCode.FOUNDATION_GARMENTS_RECEIVED,
+                new Scope("foundation-1", ScopeType.FOUNDATION),
+                null,
+                BigDecimal.TEN).total());
+        assertThrows(IllegalArgumentException.class, () -> new MetricTotal(
+                MetricCode.FOUNDATION_GARMENTS_RECEIVED,
+                new Scope("foundation-1", ScopeType.FOUNDATION),
+                null,
+                BigDecimal.valueOf(-1)));
+
+        assertEquals("APROBADA", ModerationDecision.APROBAR.resultingState());
+        assertEquals("RECHAZADA", ModerationDecision.RECHAZAR.resultingState());
+
+        PendingModeration emptyPending = new PendingModeration(List.of(), 0, "No hay publicaciones pendientes");
+        assertThrows(IllegalArgumentException.class, () -> new ModerationDecisionResult(
+                CategoryCode.ORIGIN_STORE, " ", "APROBADA", 1, emptyPending));
+        assertThrows(IllegalArgumentException.class, () -> new ModerationDecisionResult(
+                CategoryCode.ORIGIN_STORE, "store-1", " ", 1, emptyPending));
+        assertThrows(IllegalArgumentException.class, () -> new ModerationDecisionResult(
+                CategoryCode.ORIGIN_STORE, "store-1", "APROBADA", -1, emptyPending));
+
+        assertThrows(IllegalArgumentException.class, () -> new DomainAnalyticsEvent(
+                " ", DomainEventType.CATALOG_SEARCH_EXECUTED, Instant.now(),
+                null, null, null, null, null, null, BigDecimal.ONE, 0L, null));
+        assertThrows(IllegalArgumentException.class, () -> new DomainAnalyticsEvent(
+                "evt-neg", DomainEventType.CATALOG_SEARCH_EXECUTED, Instant.now(),
+                null, null, null, null, null, null, BigDecimal.valueOf(-1), 0L, null));
     }
 }

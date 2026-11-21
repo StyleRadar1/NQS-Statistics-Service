@@ -55,7 +55,8 @@ public class QueryGoalProgressUseCaseImpl implements QueryGoalProgressUseCase {
                     currentValue,
                     null,
                     null,
-                    GoalProgressStatus.GOAL_NOT_DEFINED);
+                    GoalProgressStatus.GOAL_NOT_DEFINED,
+                    goalNotDefinedMessage(metricCode));
         }
 
         BigDecimal target = targetValue.get();
@@ -73,7 +74,35 @@ public class QueryGoalProgressUseCaseImpl implements QueryGoalProgressUseCase {
                 currentValue,
                 target,
                 progressPercentage,
-                GoalProgressStatus.GOAL_DEFINED);
+                GoalProgressStatus.GOAL_DEFINED,
+                null);
+    }
+
+    @Override
+    public GoalProgress defineGoal(MetricCode metricCode, Scope scope, BigDecimal targetValue) {
+        Objects.requireNonNull(metricCode, "Metric code must not be null");
+        Objects.requireNonNull(scope, "Authenticated scope must not be null");
+        Objects.requireNonNull(targetValue, "Target value must not be null");
+        if (metricCode.scopeType() != scope.type()) {
+            throw new UnauthorizedScopeException("The authenticated scope cannot access this metric");
+        }
+        if (targetValue.signum() <= 0) {
+            throw new IllegalArgumentException("La meta debe ser un valor mayor que cero");
+        }
+
+        LocalDate today = LocalDate.now(clock);
+        Period period = resolvePeriod(metricCode, today);
+        metricRepository.upsertGoalTarget(metricCode, scope, period.startDate(), targetValue);
+        return query(metricCode, scope);
+    }
+
+    private String goalNotDefinedMessage(MetricCode metricCode) {
+        return switch (metricCode) {
+            case STORE_PAGE_VISITS -> "Tu tienda aún no tiene una meta semanal de visitas";
+            case FOUNDATION_GARMENTS_RECEIVED -> "Tu fundación aún no tiene una meta mensual de prendas";
+            case PLATFORM_SUBSCRIPTION_REVENUE -> "No hay una meta mensual de ingresos definida";
+            default -> "No existe una meta definida para esta métrica";
+        };
     }
 
     private Period resolvePeriod(MetricCode metricCode, LocalDate today) {

@@ -10,8 +10,21 @@ public record GoalProgress(
         BigDecimal currentValue,
         BigDecimal targetValue,
         BigDecimal progressPercentage,
-        GoalProgressStatus status
+        GoalProgressStatus status,
+        String message
 ) {
+
+    public GoalProgress(
+            MetricCode metricCode,
+            Scope scope,
+            Period period,
+            BigDecimal currentValue,
+            BigDecimal targetValue,
+            BigDecimal progressPercentage,
+            GoalProgressStatus status
+    ) {
+        this(metricCode, scope, period, currentValue, targetValue, progressPercentage, status, null);
+    }
 
     public GoalProgress {
         Objects.requireNonNull(metricCode, "Metric code must not be null");

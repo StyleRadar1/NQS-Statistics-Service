@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -32,8 +33,18 @@ public class RabbitMqConfig {
 
     public static final String ANALYTICS_EXCHANGE = "styleradar.exchange";
     public static final String ALERTA_CREADA_QUEUE = "styleradar.estadisticas.alerta-creada.q";
+    public static final String DOMAIN_EVENTS_QUEUE = "styleradar.estadisticas.eventos-dominio.q";
     public static final String DEAD_LETTER_QUEUE = "styleradar.estadisticas.dlq";
     public static final String ALERTA_CREADA_ROUTING_KEY = "styleradar.notificaciones.alerta.creada";
+
+    public static final String USUARIOS_EVENTS_ROUTING_KEY = "styleradar.usuarios.#";
+    public static final String TIENDAS_EVENTS_ROUTING_KEY = "styleradar.tiendas.#";
+    public static final String INVENTARIO_EVENTS_ROUTING_KEY = "styleradar.inventario.#";
+    public static final String CATALOGO_EVENTS_ROUTING_KEY = "styleradar.catalogo.#";
+    public static final String PLAYLIST_EVENTS_ROUTING_KEY = "styleradar.playlist.#";
+    public static final String CHAT_EVENTS_ROUTING_KEY = "styleradar.chat.#";
+    public static final String PAGOS_EVENTS_ROUTING_KEY = "styleradar.pagos.#";
+    public static final String DONACIONES_EVENTS_ROUTING_KEY = "styleradar.donaciones.#";
 
     @Bean
     public TopicExchange analyticsExchange() {
@@ -65,6 +76,28 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(alertaCreadaQueue)
                 .to(analyticsExchange)
                 .with(ALERTA_CREADA_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue domainEventsQueue() {
+        return QueueBuilder.durable(DOMAIN_EVENTS_QUEUE)
+                .deadLetterExchange("")
+                .deadLetterRoutingKey(DEAD_LETTER_QUEUE)
+                .build();
+    }
+
+    @Bean
+    public Declarables domainEventBindings(Queue domainEventsQueue, TopicExchange analyticsExchange) {
+        return new Declarables(
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(USUARIOS_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(TIENDAS_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(INVENTARIO_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(CATALOGO_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(PLAYLIST_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(CHAT_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(PAGOS_EVENTS_ROUTING_KEY),
+                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange).with(DONACIONES_EVENTS_ROUTING_KEY)
+        );
     }
 
     @Bean
@@ -113,13 +146,15 @@ public class RabbitMqConfig {
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
             MessageConverter jacksonAmqpMessageConverter,
-            RetryOperationsInterceptor rabbitRetryInterceptor
+            RetryOperationsInterceptor rabbitRetryInterceptor,
+            @org.springframework.beans.factory.annotation.Value("${spring.rabbitmq.listener.simple.auto-startup:true}") boolean autoStartup
     ) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jacksonAmqpMessageConverter);
         factory.setDefaultRequeueRejected(false);
         factory.setAdviceChain(rabbitRetryInterceptor);
+        factory.setAutoStartup(autoStartup);
         return factory;
     }
 }

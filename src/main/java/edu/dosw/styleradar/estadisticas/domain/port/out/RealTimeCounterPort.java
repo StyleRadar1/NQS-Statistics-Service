@@ -20,6 +20,12 @@ public interface RealTimeCounterPort {
         throw new UnsupportedOperationException("Active counter increments are not supported");
     }
 
+    default void adjustActive(MetricCode metricCode, Scope scope, long delta) {
+        if (delta > 0) {
+            incrementActive(metricCode, scope, delta);
+        }
+    }
+
     default void incrementDaily(
             MetricCode metricCode,
             Scope scope,

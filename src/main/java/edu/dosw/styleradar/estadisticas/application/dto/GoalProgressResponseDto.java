@@ -14,6 +14,7 @@ public record GoalProgressResponseDto(
         BigDecimal currentValue,
         BigDecimal targetValue,
         BigDecimal progressPercentage,
-        GoalProgressStatus status
+        GoalProgressStatus status,
+        String message
 ) {
 }

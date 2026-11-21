@@ -91,13 +91,51 @@ class QueryDistributionUseCaseTest {
 
     @Test
     void calculatesPlatformStorePlanCountsAndPercentages() {
-        repository.counts = List.of(count("PLAN_RADAR_PLUS", 5));
+        repository.counts = List.of(count("PLAN_STORE_MONTHLY", 5));
 
         var result = useCase.query(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
 
-        assertEntry(result.entries().get(0), "PLAN_RADAR", 0, "0.0");
-        assertEntry(result.entries().get(1), "PLAN_RADAR_PLUS", 5, "100.0");
+        assertEquals(1, result.entries().size());
+        assertEntry(result.entries().get(0), "PLAN_STORE_MONTHLY", 5, "100.00");
         assertRequested(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
+
+        repository.counts = List.of();
+        var emptyResult = useCase.query(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
+        assertEntry(emptyResult.entries().get(0), "PLAN_STORE_MONTHLY", 0, "0.00");
+    }
+
+    @Test
+    void calculatesFoundationDonationsByOriginAndReturnsZerosWhenEmpty() {
+        repository.counts = List.of(count("ORIGIN_STORE", 3), count("ORIGIN_USER", 1));
+
+        var result = useCase.query(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
+
+        assertEquals(2, result.entries().size());
+        assertEntry(result.entries().get(0), "ORIGIN_STORE", 3, "75.00");
+        assertEntry(result.entries().get(1), "ORIGIN_USER", 1, "25.00");
+        assertRequested(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
+
+        repository.counts = List.of();
+        var emptyResult = useCase.query(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
+        assertEntry(emptyResult.entries().get(0), "ORIGIN_STORE", 0, "0.00");
+        assertEntry(emptyResult.entries().get(1), "ORIGIN_USER", 0, "0.00");
+    }
+
+    @Test
+    void calculatesPlatformStoresByVerificationAndReturnsZerosWhenEmpty() {
+        repository.counts = List.of(count("APPROVED", 8), count("PENDING", 2));
+
+        var result = useCase.query(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
+
+        assertEquals(2, result.entries().size());
+        assertEntry(result.entries().get(0), "APPROVED", 8, "80.00");
+        assertEntry(result.entries().get(1), "PENDING", 2, "20.00");
+        assertRequested(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
+
+        repository.counts = List.of();
+        var emptyResult = useCase.query(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
+        assertEntry(emptyResult.entries().get(0), "APPROVED", 0, "0.00");
+        assertEntry(emptyResult.entries().get(1), "PENDING", 0, "0.00");
     }
 
     @Test

@@ -23,13 +23,13 @@ public class AuthenticatedScopeResolver {
                 }
                 yield scope(actor.storeId(), ScopeType.STORE);
             }
-            case "FOUNDATION_ADMIN", "REPRESENTANTE_FUNDACION" -> {
+            case "FOUNDATION_ADMIN", "FOUNDATION_REPRESENTATIVE", "REPRESENTANTE_FUNDACION", "FOUNDATION" -> {
                 if (requestedType != ScopeType.FOUNDATION) {
                     throw unauthorized("FOUNDATION_ADMIN can only access FOUNDATION metrics");
                 }
                 yield scope(actor.foundationId(), ScopeType.FOUNDATION);
             }
-            case "PLATFORM_ADMIN", "ADMIN_STYLERADAR" -> {
+            case "PLATFORM_ADMIN", "STYLERADAR_ADMIN", "ADMIN_STYLERADAR", "ADMIN" -> {
                 if (requestedType != ScopeType.PLATFORM) {
                     throw unauthorized("PLATFORM_ADMIN can only access PLATFORM metrics");
                 }

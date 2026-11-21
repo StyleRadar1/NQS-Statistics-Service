@@ -19,6 +19,18 @@ public interface MetricDailyJpaRepository extends JpaRepository<MetricDailyEntit
             LocalDate startDate,
             LocalDate endDate);
 
+    @Query("""
+            SELECT COALESCE(SUM(m.value), 0)
+            FROM MetricDailyEntity m
+            WHERE m.scopeType = :scopeType
+              AND m.scopeId = :scopeId
+              AND m.metricCode = :metricCode
+            """)
+    java.math.BigDecimal sumAllByScopeAndMetricCode(
+            @Param("scopeType") String scopeType,
+            @Param("scopeId") String scopeId,
+            @Param("metricCode") String metricCode);
+
     @Modifying
     @Query(value = """
             INSERT INTO metric_daily (id, scope_type, scope_id, metric_code, metric_date, value)

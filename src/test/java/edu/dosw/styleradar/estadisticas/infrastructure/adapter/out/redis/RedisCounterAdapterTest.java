@@ -129,6 +129,26 @@ class RedisCounterAdapterTest {
     }
 
     @Test
+    void adjustsActiveCounterWithPositiveNegativeZeroAndValidatesMetric() {
+        Scope platformScope = new Scope("platform", ScopeType.PLATFORM);
+        when(redisTemplate.execute(any(RedisScript.class),
+                eq(List.of("statistics:realtime:active:PLATFORM:platform:PLATFORM_ACTIVE_FOUNDATIONS")),
+                eq("1"))).thenReturn(5L);
+        when(redisTemplate.execute(any(RedisScript.class),
+                eq(List.of("statistics:realtime:active:PLATFORM:platform:PLATFORM_ACTIVE_FOUNDATIONS")),
+                eq("-1"))).thenReturn(4L, (Long) null);
+
+        adapter.adjustActive(MetricCode.PLATFORM_ACTIVE_FOUNDATIONS, platformScope, 1L);
+        adapter.adjustActive(MetricCode.PLATFORM_ACTIVE_FOUNDATIONS, platformScope, -1L);
+        adapter.adjustActive(MetricCode.PLATFORM_ACTIVE_FOUNDATIONS, platformScope, 0L);
+
+        assertThrows(IllegalStateException.class,
+                () -> adapter.adjustActive(MetricCode.PLATFORM_ACTIVE_FOUNDATIONS, platformScope, -1L));
+        assertThrows(IllegalArgumentException.class,
+                () -> adapter.adjustActive(MetricCode.PLATFORM_SEARCHES, platformScope, 1L));
+    }
+
+    @Test
     void incrementsDailyCounterAndValidatesArgumentsAndScriptResult() {
         Scope storeScope = new Scope("store-17", ScopeType.STORE);
         LocalDate date = LocalDate.of(2026, 11, 17);

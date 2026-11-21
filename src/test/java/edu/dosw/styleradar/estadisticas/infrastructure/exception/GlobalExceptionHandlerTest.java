@@ -1,8 +1,8 @@
 package edu.dosw.styleradar.estadisticas.infrastructure.exception;
 
-import edu.dosw.styleradar.estadisticas.domain.exception.GraficaNotFoundException;
-import edu.dosw.styleradar.estadisticas.domain.exception.InvalidPeriodoException;
-import edu.dosw.styleradar.estadisticas.domain.exception.TableroNotFoundException;
+import edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException;
+import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
+import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,18 +24,40 @@ class GlobalExceptionHandlerTest {
     void setUp() {
         handler = new GlobalExceptionHandler();
         request = new MockHttpServletRequest();
-        request.setRequestURI("/api/v1/estadisticas/tableros/TIENDA/123");
+        request.setRequestURI("/api/v1/analytics/time-series");
     }
 
     @Test
-    @DisplayName("Debe manejar InvalidPeriodoException retornando 400")
-    void testHandleInvalidPeriodo() {
-        InvalidPeriodoException ex = new InvalidPeriodoException("Periodo inválido");
-        ResponseEntity<Map<String, Object>> response = handler.handleInvalidPeriodo(ex, request);
+    @DisplayName("Debe manejar UnauthorizedScopeException retornando 403")
+    void testHandleUnauthorizedScope() {
+        UnauthorizedScopeException ex = new UnauthorizedScopeException("No autorizado");
+        ResponseEntity<Map<String, Object>> response = handler.handleUnauthorizedScope(ex, request);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(403, response.getBody().get("status"));
+        assertEquals("No autorizado", response.getBody().get("message"));
+    }
+
+    @Test
+    @DisplayName("Debe manejar UnsupportedMetricScopeException retornando 400")
+    void testHandleUnsupportedMetricScope() {
+        UnsupportedMetricScopeException ex = new UnsupportedMetricScopeException("Scope no soportado");
+        ResponseEntity<Map<String, Object>> response = handler.handleUnsupportedMetricScope(ex, request);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(400, response.getBody().get("status"));
-        assertEquals("Periodo inválido", response.getBody().get("message"));
+        assertEquals("Scope no soportado", response.getBody().get("message"));
+    }
+
+    @Test
+    @DisplayName("Debe manejar InvalidTimeSeriesRequestException retornando 400")
+    void testHandleInvalidTimeSeriesRequest() {
+        InvalidTimeSeriesRequestException ex = new InvalidTimeSeriesRequestException("Rango inválido");
+        ResponseEntity<Map<String, Object>> response = handler.handleInvalidTimeSeriesRequest(ex, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(400, response.getBody().get("status"));
+        assertEquals("Rango inválido", response.getBody().get("message"));
     }
 
     @Test
@@ -56,26 +78,6 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().get("message").toString().contains("id"));
-    }
-
-    @Test
-    @DisplayName("Debe manejar TableroNotFoundException retornando 404")
-    void testHandleTableroNotFound() {
-        TableroNotFoundException ex = new TableroNotFoundException("No encontrado");
-        ResponseEntity<Map<String, Object>> response = handler.handleTableroNotFound(ex, request);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("No encontrado", response.getBody().get("message"));
-    }
-
-    @Test
-    @DisplayName("Debe manejar GraficaNotFoundException retornando 404")
-    void testHandleGraficaNotFound() {
-        GraficaNotFoundException ex = new GraficaNotFoundException("Gráfica no encontrada");
-        ResponseEntity<Map<String, Object>> response = handler.handleGraficaNotFound(ex, request);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Gráfica no encontrada", response.getBody().get("message"));
     }
 
     @Test

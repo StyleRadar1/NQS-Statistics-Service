@@ -10,6 +10,9 @@ import edu.dosw.styleradar.estadisticas.domain.model.PendingModerationPublisherC
 import edu.dosw.styleradar.estadisticas.domain.model.Scope;
 import edu.dosw.styleradar.estadisticas.domain.port.out.MetricRepositoryPort;
 import edu.dosw.styleradar.estadisticas.domain.port.out.PendingModerationRepositoryPort;
+import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.MetricDistributionEntity;
+import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.MetricGoalEntity;
+import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.MetricItemDailyEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.MetricGoalJpaRepository;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.MetricItemDailyJpaRepository;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.MetricDailyJpaRepository;
@@ -114,6 +117,125 @@ public class MetricPersistenceAdapter implements MetricRepositoryPort, PendingMo
     }
 
     @Override
+    @Transactional
+    public void upsertGoalTarget(
+            MetricCode metricCode,
+            Scope scope,
+            LocalDate periodStartDate,
+            BigDecimal targetValue
+    ) {
+        metricGoalJpaRepository
+                .findByScopeTypeAndScopeIdAndMetricCodeAndPeriodStartDate(
+                        scope.type().name(),
+                        scope.id(),
+                        metricCode.name(),
+                        periodStartDate)
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.updateTargetValue(targetValue);
+                            metricGoalJpaRepository.save(existing);
+                        },
+                        () -> metricGoalJpaRepository.save(new MetricGoalEntity(
+                                UUID.randomUUID(),
+                                scope.type().name(),
+                                scope.id(),
+                                metricCode.name(),
+                                periodStartDate,
+                                targetValue)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal sumAllDailyPoints(MetricCode metricCode, Scope scope) {
+        BigDecimal total = metricDailyJpaRepository.sumAllByScopeAndMetricCode(
+                scope.type().name(),
+                scope.id(),
+                metricCode.name());
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    @Override
+    @Transactional
+    public void adjustDistributionCount(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode categoryCode,
+            long delta
+    ) {
+        if (delta == 0L) {
+            return;
+        }
+        metricDistributionJpaRepository
+                .findByScopeTypeAndScopeIdAndMetricCodeAndCategoryCode(
+                        scope.type().name(),
+                        scope.id(),
+                        metricCode.name(),
+                        categoryCode.value())
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.adjustValue(delta);
+                            metricDistributionJpaRepository.save(existing);
+                        },
+                        () -> {
+                            if (delta > 0L) {
+                                metricDistributionJpaRepository.save(new MetricDistributionEntity(
+                                        UUID.randomUUID(),
+                                        scope.type().name(),
+                                        scope.id(),
+                                        metricCode.name(),
+                                        categoryCode.value(),
+                                        delta));
+                            }
+                        });
+    }
+
+    @Override
+    @Transactional
+    public void upsertItemDailyIncrement(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode categoryCode,
+            String itemId,
+            String itemName,
+            LocalDate day,
+            long delta
+    ) {
+        if (delta == 0L) {
+            return;
+        }
+        String categoryValue = categoryCode != null ? categoryCode.value() : "UNSPECIFIED";
+        String resolvedName = (itemName == null || itemName.isBlank()) ? itemId : itemName.trim();
+        metricItemDailyJpaRepository
+                .findByScopeTypeAndScopeIdAndMetricCodeAndCategoryCodeAndItemIdAndDay(
+                        scope.type().name(),
+                        scope.id(),
+                        metricCode.name(),
+                        categoryValue,
+                        itemId,
+                        day)
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.adjustValue(delta);
+                            existing.updateItemName(resolvedName);
+                            metricItemDailyJpaRepository.save(existing);
+                        },
+                        () -> {
+                            if (delta > 0L) {
+                                metricItemDailyJpaRepository.save(new MetricItemDailyEntity(
+                                        UUID.randomUUID(),
+                                        scope.type().name(),
+                                        scope.id(),
+                                        metricCode.name(),
+                                        categoryValue,
+                                        itemId,
+                                        resolvedName,
+                                        day,
+                                        delta));
+                            }
+                        });
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<PendingModerationPublisherCount> findPendingModerationPublishers(
             MetricCode metricCode,
@@ -132,5 +254,32 @@ public class MetricPersistenceAdapter implements MetricRepositoryPort, PendingMo
                         publisher.getPublisherName(),
                         publisher.getPendingCount()))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public long resolvePendingByPublisher(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode publisherType,
+            String targetId
+    ) {
+        List<MetricItemDailyEntity> pendingRows = metricItemDailyJpaRepository
+                .findByScopeTypeAndScopeIdAndMetricCodeAndCategoryCodeAndItemIdAndValueGreaterThan(
+                        scope.type().name(),
+                        scope.id(),
+                        metricCode.name(),
+                        publisherType.value(),
+                        targetId,
+                        0L);
+        long resolved = 0L;
+        for (MetricItemDailyEntity row : pendingRows) {
+            resolved += row.getValue();
+            row.clearValue();
+        }
+        if (!pendingRows.isEmpty()) {
+            metricItemDailyJpaRepository.saveAll(pendingRows);
+        }
+        return resolved;
     }
 }

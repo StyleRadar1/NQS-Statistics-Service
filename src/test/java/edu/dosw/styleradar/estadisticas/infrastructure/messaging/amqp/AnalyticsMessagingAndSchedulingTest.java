@@ -56,7 +56,7 @@ class AnalyticsMessagingAndSchedulingTest {
                 75L,
                 501L,
                 "ITEM_AGOTADO",
-                1045L,
+                "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                 null,
                 "IN_APP",
                 fechaCreacion);
@@ -78,15 +78,15 @@ class AnalyticsMessagingAndSchedulingTest {
         assertThrows(NullPointerException.class, () -> mapper.toAnalyticsEvent(null));
 
         assertThrows(IllegalArgumentException.class, () -> mapper.toAnalyticsEvent(
-                new AlertaCreadaEventPayload(" ", 75L, 501L, "ITEM_AGOTADO", 1045L, null, "IN_APP", now)));
+                new AlertaCreadaEventPayload(" ", 75L, 501L, "ITEM_AGOTADO", "1045", null, "IN_APP", now)));
         assertThrows(NullPointerException.class, () -> mapper.toAnalyticsEvent(
-                new AlertaCreadaEventPayload("evt-1", null, 501L, "ITEM_AGOTADO", 1045L, null, "IN_APP", now)));
+                new AlertaCreadaEventPayload("evt-1", null, 501L, "ITEM_AGOTADO", "1045", null, "IN_APP", now)));
         assertThrows(NullPointerException.class, () -> mapper.toAnalyticsEvent(
-                new AlertaCreadaEventPayload("evt-1", 75L, null, "ITEM_AGOTADO", 1045L, null, "IN_APP", now)));
+                new AlertaCreadaEventPayload("evt-1", 75L, null, "ITEM_AGOTADO", "1045", null, "IN_APP", now)));
         assertThrows(IllegalArgumentException.class, () -> mapper.toAnalyticsEvent(
-                new AlertaCreadaEventPayload("evt-1", 75L, 501L, "", 1045L, null, "IN_APP", now)));
+                new AlertaCreadaEventPayload("evt-1", 75L, 501L, "", "1045", null, "IN_APP", now)));
         assertThrows(NullPointerException.class, () -> mapper.toAnalyticsEvent(
-                new AlertaCreadaEventPayload("evt-1", 75L, 501L, "ITEM_AGOTADO", 1045L, null, "IN_APP", null)));
+                new AlertaCreadaEventPayload("evt-1", 75L, 501L, "ITEM_AGOTADO", "1045", null, "IN_APP", null)));
     }
 
     @Test
@@ -100,7 +100,7 @@ class AnalyticsMessagingAndSchedulingTest {
                 75L,
                 501L,
                 "ITEM_AGOTADO",
-                1045L,
+                "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                 null,
                 "IN_APP",
                 LocalDateTime.of(2026, 11, 2, 12, 30, 0));
@@ -116,7 +116,7 @@ class AnalyticsMessagingAndSchedulingTest {
         when(processedRepo.saveAndFlush(any(ProcessedEventEntity.class)))
                 .thenThrow(new DataIntegrityViolationException("duplicate key"));
         AlertaCreadaEventPayload concurrentPayload = new AlertaCreadaEventPayload(
-                "evt-alr-concurrent", 76L, 502L, "ITEM_AGOTADO", 1046L, null, "IN_APP",
+                "evt-alr-concurrent", 76L, 502L, "ITEM_AGOTADO", "1046", null, "IN_APP",
                 LocalDateTime.of(2026, 11, 2, 12, 31, 0));
         listener.receive(concurrentPayload);
 
@@ -130,7 +130,7 @@ class AnalyticsMessagingAndSchedulingTest {
         AnalyticsEventListener listener = new AnalyticsEventListener(mapper, registerUseCase, processedRepo);
 
         AlertaCreadaEventPayload invalidPayload = new AlertaCreadaEventPayload(
-                "", 75L, 501L, "ITEM_AGOTADO", 1045L, null, "IN_APP",
+                "", 75L, 501L, "ITEM_AGOTADO", "1045", null, "IN_APP",
                 LocalDateTime.of(2026, 11, 2, 12, 30, 0));
 
         assertThrows(AmqpRejectAndDontRequeueException.class, () -> listener.receive(invalidPayload));
@@ -148,7 +148,7 @@ class AnalyticsMessagingAndSchedulingTest {
                   "alertaId": 75,
                   "usuarioId": 501,
                   "tipoAlerta": "ITEM_AGOTADO",
-                  "itemId": 1045,
+                  "itemId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                   "busquedaGuardadaId": null,
                   "canal": "IN_APP",
                   "fechaCreacion": "2026-11-02T12:30:00"

@@ -3,6 +3,7 @@ package edu.dosw.styleradar.estadisticas.application.usecase;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
 import edu.dosw.styleradar.estadisticas.domain.model.CategoryCode;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
+import edu.dosw.styleradar.estadisticas.domain.model.ModerationDecision;
 import edu.dosw.styleradar.estadisticas.domain.model.PendingModerationPublisherCount;
 import edu.dosw.styleradar.estadisticas.domain.model.Scope;
 import edu.dosw.styleradar.estadisticas.domain.model.ScopeType;
@@ -86,6 +87,85 @@ class GetPendingModerationUseCaseTest {
                 MetricCode.MODERATION_PUBLICATIONS,
                 new Scope("store-1", ScopeType.STORE),
                 List.of(CategoryCode.ORIGIN_STORE, CategoryCode.ORIGIN_USER));
+    }
+
+    @Test
+    void approvesAndRejectsPendingModerationAndReturnsUpdatedPendingList() {
+        when(repository.resolvePendingByPublisher(
+                MetricCode.MODERATION_PUBLICATIONS,
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_STORE,
+                "store-1")).thenReturn(3L);
+        when(repository.findPendingModerationPublishers(
+                MetricCode.MODERATION_PUBLICATIONS,
+                PLATFORM_SCOPE,
+                List.of(CategoryCode.ORIGIN_STORE, CategoryCode.ORIGIN_USER)))
+                .thenReturn(List.of(publisher(CategoryCode.ORIGIN_USER, "user-1", "User One", 2)));
+
+        var approved = useCase.decide(
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_STORE,
+                " store-1 ",
+                ModerationDecision.APROBAR);
+
+        assertEquals(CategoryCode.ORIGIN_STORE, approved.publisherType());
+        assertEquals("store-1", approved.targetId());
+        assertEquals("APROBADA", approved.resultadoModeracion());
+        assertEquals(3L, approved.moderatedCount());
+        assertEquals(2L, approved.updatedPending().totalPendingCount());
+
+        when(repository.resolvePendingByPublisher(
+                MetricCode.MODERATION_PUBLICATIONS,
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_USER,
+                "user-1")).thenReturn(2L);
+        when(repository.findPendingModerationPublishers(
+                MetricCode.MODERATION_PUBLICATIONS,
+                PLATFORM_SCOPE,
+                List.of(CategoryCode.ORIGIN_STORE, CategoryCode.ORIGIN_USER)))
+                .thenReturn(List.of());
+
+        var rejected = useCase.decide(
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_USER,
+                "user-1",
+                ModerationDecision.RECHAZAR);
+
+        assertEquals("RECHAZADA", rejected.resultadoModeracion());
+        assertEquals(0L, rejected.updatedPending().totalPendingCount());
+    }
+
+    @Test
+    void rejectsInvalidModerationDecisionRequests() {
+        assertThrows(UnauthorizedScopeException.class, () -> useCase.decide(
+                new Scope("store-1", ScopeType.STORE),
+                CategoryCode.ORIGIN_STORE,
+                "store-1",
+                ModerationDecision.APROBAR));
+
+        assertThrows(IllegalArgumentException.class, () -> useCase.decide(
+                PLATFORM_SCOPE,
+                CategoryCode.AVAILABLE,
+                "store-1",
+                ModerationDecision.APROBAR));
+
+        assertThrows(IllegalArgumentException.class, () -> useCase.decide(
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_STORE,
+                "  ",
+                ModerationDecision.APROBAR));
+
+        when(repository.resolvePendingByPublisher(
+                MetricCode.MODERATION_PUBLICATIONS,
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_STORE,
+                "missing-store")).thenReturn(0L);
+
+        assertThrows(IllegalArgumentException.class, () -> useCase.decide(
+                PLATFORM_SCOPE,
+                CategoryCode.ORIGIN_STORE,
+                "missing-store",
+                ModerationDecision.RECHAZAR));
     }
 
     private PendingModerationPublisherCount publisher(
