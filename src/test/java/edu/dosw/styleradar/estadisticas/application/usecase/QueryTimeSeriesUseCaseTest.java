@@ -4,6 +4,7 @@ import edu.dosw.styleradar.estadisticas.application.service.TimeSeriesGapFiller;
 import edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeException;
+import edu.dosw.styleradar.estadisticas.domain.model.ComparisonWindow;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.GarmentSavesCount;
 import edu.dosw.styleradar.estadisticas.domain.model.DistributionCount;
@@ -130,11 +131,14 @@ class QueryTimeSeriesUseCaseTest {
                 new Period(LocalDate.parse("2026-10-15"), LocalDate.parse("2026-11-15")),
                 TimeGranularity.DAY));
 
-        assertThrows(InvalidTimeSeriesRequestException.class, () -> useCase.query(
+        var revenueDefault = useCase.query(
                 MetricCode.PLATFORM_SUBSCRIPTION_REVENUE,
                 new Scope("platform", ScopeType.PLATFORM),
                 null,
-                TimeGranularity.MONTH));
+                TimeGranularity.MONTH);
+        assertEquals(6, revenueDefault.points().size());
+        assertEquals(LocalDate.parse("2026-06-01"), revenueDefault.period().startDate());
+        assertEquals(LocalDate.parse("2026-11-30"), revenueDefault.period().endDate());
 
         var revenueSeries = useCase.query(
                 MetricCode.PLATFORM_SUBSCRIPTION_REVENUE,
@@ -142,6 +146,23 @@ class QueryTimeSeriesUseCaseTest {
                 new Period(LocalDate.parse("2026-09-01"), LocalDate.parse("2026-11-30")),
                 TimeGranularity.MONTH);
         assertEquals(3, revenueSeries.points().size());
+    }
+
+    @Test
+    void queriesStoreDailyMetricsByPredefinedWindowAndRejectsNonStoreWindowQueries() {
+        var series7 = useCase.queryByWindow(
+                MetricCode.STORE_PAGE_VISITS,
+                new Scope("store-1", ScopeType.STORE),
+                ComparisonWindow.DIAS_7);
+
+        assertEquals(7, series7.points().size());
+        assertEquals(LocalDate.parse("2026-11-11"), series7.period().startDate());
+        assertEquals(LocalDate.parse("2026-11-17"), series7.period().endDate());
+
+        assertThrows(InvalidTimeSeriesRequestException.class, () -> useCase.queryByWindow(
+                MetricCode.PLATFORM_SEARCHES,
+                new Scope("platform", ScopeType.PLATFORM),
+                ComparisonWindow.DIAS_30));
     }
 
     private static final class RecordingMetricRepository implements MetricRepositoryPort {

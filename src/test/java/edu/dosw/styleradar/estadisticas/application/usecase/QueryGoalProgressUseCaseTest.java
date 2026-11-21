@@ -75,8 +75,27 @@ class QueryGoalProgressUseCaseTest {
         assertNull(result.targetValue());
         assertNull(result.progressPercentage());
         assertEquals(GoalProgressStatus.GOAL_NOT_DEFINED, result.status());
+        assertEquals("Tu fundación aún no tiene una meta mensual de prendas", result.message());
         assertEquals(new Period(LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-17")),
                 repository.lastQueriedPeriod);
+    }
+
+    @Test
+    void definesGoalAndReturnsUpdatedProgress() {
+        Scope scope = new Scope("store-1", ScopeType.STORE);
+        repository.points = List.of(new Point(LocalDate.parse("2026-11-16"), BigDecimal.valueOf(80)));
+
+        var result = useCase.defineGoal(MetricCode.STORE_PAGE_VISITS, scope, BigDecimal.valueOf(200));
+
+        assertEquals(GoalProgressStatus.GOAL_DEFINED, result.status());
+        assertEquals(new BigDecimal("200"), result.targetValue());
+        assertEquals(new BigDecimal("40.0"), result.progressPercentage());
+        assertEquals(LocalDate.parse("2026-11-16"), repository.lastUpsertedGoalPeriodStart);
+
+        assertThrows(IllegalArgumentException.class, () -> useCase.defineGoal(
+                MetricCode.STORE_PAGE_VISITS, scope, BigDecimal.ZERO));
+        assertThrows(UnauthorizedScopeException.class, () -> useCase.defineGoal(
+                MetricCode.STORE_PAGE_VISITS, new Scope("platform", ScopeType.PLATFORM), BigDecimal.TEN));
     }
 
     @Test
@@ -106,6 +125,7 @@ class QueryGoalProgressUseCaseTest {
         private Optional<BigDecimal> goalTarget = Optional.empty();
         private Period lastQueriedPeriod;
         private LocalDate lastGoalPeriodStartDate;
+        private LocalDate lastUpsertedGoalPeriodStart;
         private int dailyCalls;
         private int goalCalls;
 
@@ -135,6 +155,17 @@ class QueryGoalProgressUseCaseTest {
         @Override
         public List<DistributionCount> findDistributionCounts(MetricCode metricCode, Scope scope) {
             return List.of();
+        }
+
+        @Override
+        public void upsertGoalTarget(
+                MetricCode metricCode,
+                Scope scope,
+                LocalDate periodStartDate,
+                BigDecimal targetValue
+        ) {
+            lastUpsertedGoalPeriodStart = periodStartDate;
+            goalTarget = Optional.of(targetValue);
         }
     }
 }

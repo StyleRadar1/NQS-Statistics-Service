@@ -1,6 +1,7 @@
 package edu.dosw.styleradar.estadisticas.infrastructure.adapter.in.rest;
 
 import edu.dosw.styleradar.estadisticas.application.dto.DtoMapper;
+import edu.dosw.styleradar.estadisticas.domain.model.ComparisonWindow;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.Period;
 import edu.dosw.styleradar.estadisticas.domain.model.Point;
@@ -63,7 +64,7 @@ class TimeSeriesRestControllerTest {
                                 new Point(period.startDate(), BigDecimal.ZERO),
                                 new Point(period.endDate(), BigDecimal.valueOf(3)))));
 
-        mockMvc.perform(get("/api/v1/statistics/time-series/STORE_PAGE_VISITS")
+        mockMvc.perform(get("/statistics/time-series/STORE_PAGE_VISITS")
                         .param("startDate", "2026-11-01")
                         .param("endDate", "2026-11-02")
                         .param("granularity", "DAY"))
@@ -80,12 +81,38 @@ class TimeSeriesRestControllerTest {
     }
 
     @Test
+    void supportsPeriodoParameterAndRejectsCombiningPeriodoWithExplicitDates() throws Exception {
+        when(scopeResolver.resolve(MetricCode.STORE_MESSAGES_RECEIVED)).thenReturn(scope);
+        when(useCase.queryByWindow(MetricCode.STORE_MESSAGES_RECEIVED, scope, ComparisonWindow.DIAS_7))
+                .thenReturn(new TimeSeries(
+                        MetricCode.STORE_MESSAGES_RECEIVED,
+                        scope,
+                        period,
+                        TimeGranularity.DAY,
+                        List.of(new Point(period.startDate(), BigDecimal.ONE))));
+
+        mockMvc.perform(get("/statistics/time-series/STORE_MESSAGES_RECEIVED")
+                        .param("periodo", "7_DIAS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.metricCode").value("STORE_MESSAGES_RECEIVED"))
+                .andExpect(jsonPath("$.points[0].value").value(1));
+
+        mockMvc.perform(get("/statistics/time-series/STORE_MESSAGES_RECEIVED")
+                        .param("periodo", "7_DIAS")
+                        .param("startDate", "2026-11-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PERIOD"));
+
+        verify(useCase).queryByWindow(MetricCode.STORE_MESSAGES_RECEIVED, scope, ComparisonWindow.DIAS_7);
+    }
+
+    @Test
     void rejectsMismatchedStartAndEndDateParametersAndSupportsNoDates() throws Exception {
-        mockMvc.perform(get("/api/v1/statistics/time-series/STORE_PAGE_VISITS")
+        mockMvc.perform(get("/statistics/time-series/STORE_PAGE_VISITS")
                         .param("startDate", "2026-11-01"))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(get("/api/v1/statistics/time-series/STORE_PAGE_VISITS")
+        mockMvc.perform(get("/statistics/time-series/STORE_PAGE_VISITS")
                         .param("endDate", "2026-11-02"))
                 .andExpect(status().isBadRequest());
 
@@ -98,7 +125,53 @@ class TimeSeriesRestControllerTest {
                         TimeGranularity.DAY,
                         List.of()));
 
-        mockMvc.perform(get("/api/v1/statistics/time-series/STORE_PAGE_VISITS"))
+        mockMvc.perform(get("/statistics/time-series/STORE_PAGE_VISITS"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void returnsUnifiedSixMonthDonationRequestsForAuthenticatedFoundation() throws Exception {
+        Scope foundationScope = new Scope("foundation-7", ScopeType.FOUNDATION);
+        Period sixMonths = new Period(LocalDate.parse("2026-06-01"), LocalDate.parse("2026-11-30"));
+        when(scopeResolver.resolve(MetricCode.FOUNDATION_REQUESTS_FROM_USERS)).thenReturn(foundationScope);
+        when(useCase.query(MetricCode.FOUNDATION_REQUESTS_FROM_USERS, foundationScope, null, TimeGranularity.MONTH))
+                .thenReturn(new TimeSeries(
+                        MetricCode.FOUNDATION_REQUESTS_FROM_USERS,
+                        foundationScope,
+                        sixMonths,
+                        TimeGranularity.MONTH,
+                        List.of(
+                                new Point(LocalDate.parse("2026-06-01"), BigDecimal.ZERO),
+                                new Point(LocalDate.parse("2026-07-01"), BigDecimal.valueOf(2)),
+                                new Point(LocalDate.parse("2026-08-01"), BigDecimal.ZERO),
+                                new Point(LocalDate.parse("2026-09-01"), BigDecimal.valueOf(4)),
+                                new Point(LocalDate.parse("2026-10-01"), BigDecimal.ZERO),
+                                new Point(LocalDate.parse("2026-11-01"), BigDecimal.valueOf(6)))));
+        when(useCase.query(MetricCode.FOUNDATION_REQUESTS_FROM_STORES, foundationScope, null, TimeGranularity.MONTH))
+                .thenReturn(new TimeSeries(
+                        MetricCode.FOUNDATION_REQUESTS_FROM_STORES,
+                        foundationScope,
+                        sixMonths,
+                        TimeGranularity.MONTH,
+                        List.of(
+                                new Point(LocalDate.parse("2026-06-01"), BigDecimal.ONE),
+                                new Point(LocalDate.parse("2026-07-01"), BigDecimal.ZERO),
+                                new Point(LocalDate.parse("2026-08-01"), BigDecimal.valueOf(3)),
+                                new Point(LocalDate.parse("2026-09-01"), BigDecimal.ZERO),
+                                new Point(LocalDate.parse("2026-10-01"), BigDecimal.valueOf(5)),
+                                new Point(LocalDate.parse("2026-11-01"), BigDecimal.ZERO))));
+
+        mockMvc.perform(get("/statistics/time-series/foundations/monthly-requests"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.foundationId").value("foundation-7"))
+                .andExpect(jsonPath("$.solicitudesPersonas.length()").value(6))
+                .andExpect(jsonPath("$.solicitudesPersonas[0].mes").value("2026-06"))
+                .andExpect(jsonPath("$.solicitudesPersonas[0].cantidad").value(0))
+                .andExpect(jsonPath("$.solicitudesPersonas[5].mes").value("2026-11"))
+                .andExpect(jsonPath("$.solicitudesPersonas[5].cantidad").value(6))
+                .andExpect(jsonPath("$.solicitudesTiendas.length()").value(6))
+                .andExpect(jsonPath("$.solicitudesTiendas[0].cantidad").value(1))
+                .andExpect(jsonPath("$.solicitudesTiendas[4].mes").value("2026-10"))
+                .andExpect(jsonPath("$.solicitudesTiendas[4].cantidad").value(5));
     }
 }

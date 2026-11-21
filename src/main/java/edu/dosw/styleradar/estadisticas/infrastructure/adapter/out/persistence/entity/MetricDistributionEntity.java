@@ -56,4 +56,8 @@ public class MetricDistributionEntity {
     public long getValue() {
         return value;
     }
+
+    public void adjustValue(long delta) {
+        this.value = Math.max(0L, this.value + delta);
+    }
 }

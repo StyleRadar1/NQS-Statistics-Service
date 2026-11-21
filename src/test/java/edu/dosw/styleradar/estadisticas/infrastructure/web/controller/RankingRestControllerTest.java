@@ -45,7 +45,7 @@ class RankingRestControllerTest {
                 List.of(new RankedItem("garment-9", "Jacket", 1, 25)),
                 null));
 
-        mockMvc.perform(get("/api/v1/statistics/rankings/STORE_GARMENTS_BY_SAVES"))
+        mockMvc.perform(get("/statistics/rankings/STORE_GARMENTS_BY_SAVES"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metricCode").value("STORE_GARMENTS_BY_SAVES"))
                 .andExpect(jsonPath("$.scopeId").value("store-17"))
@@ -68,7 +68,7 @@ class RankingRestControllerTest {
                 List.of(),
                 "No hay prendas publicadas"));
 
-        mockMvc.perform(get("/api/v1/statistics/rankings/STORE_GARMENTS_BY_SAVES"))
+        mockMvc.perform(get("/statistics/rankings/STORE_GARMENTS_BY_SAVES"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(0))
                 .andExpect(jsonPath("$.message").value("No hay prendas publicadas"));

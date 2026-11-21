@@ -10,8 +10,8 @@ public record AlertaCreadaEventPayload(
         Long alertaId,
         Long usuarioId,
         String tipoAlerta,
-        Long itemId,
-        Long busquedaGuardadaId,
+        String itemId,
+        String busquedaGuardadaId,
         String canal,
         LocalDateTime fechaCreacion
 ) {

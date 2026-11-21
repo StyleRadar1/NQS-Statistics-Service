@@ -48,7 +48,7 @@ class DistributionRestControllerTest {
                         8,
                         new BigDecimal("100.0")))));
 
-        mockMvc.perform(get("/api/v1/statistics/distributions/STORE_INVENTORY_BY_STATE"))
+        mockMvc.perform(get("/statistics/distributions/STORE_INVENTORY_BY_STATE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metricCode").value("STORE_INVENTORY_BY_STATE"))
                 .andExpect(jsonPath("$.scopeId").value("store-17"))

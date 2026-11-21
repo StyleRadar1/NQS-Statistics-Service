@@ -5,13 +5,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-@Schema(description = "Publicaciones pendientes de moderación agrupadas por tipo y publicador")
+@Schema(description = "Publications pending moderation grouped by publisher type and publisher")
 public record PendingModerationResponseDto(
-        @Schema(description = "Número total de publicaciones pendientes", example = "12")
+        @Schema(description = "Total number of pending publications", example = "12")
         long totalPendingCount,
-        @Schema(description = "Grupos por tipo de publicador")
+        @Schema(description = "Groups by publisher type")
         List<PendingModerationGroupDto> groups,
-        @Schema(description = "Mensaje informativo cuando no hay publicaciones pendientes",
+        @Schema(description = "Informational message when there are no pending publications",
                 example = "No hay publicaciones pendientes de moderación")
         String message
 ) {

@@ -4,6 +4,7 @@ import edu.dosw.styleradar.estadisticas.application.service.TimeSeriesGapFiller;
 import edu.dosw.styleradar.estadisticas.domain.exception.InvalidTimeSeriesRequestException;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeException;
+import edu.dosw.styleradar.estadisticas.domain.model.ComparisonWindow;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.Period;
 import edu.dosw.styleradar.estadisticas.domain.model.Scope;
@@ -77,6 +78,19 @@ public class QueryTimeSeriesUseCaseImpl implements QueryTimeSeriesUseCase {
                 gapFiller.fill(dailyPoints, period, granularity));
     }
 
+    @Override
+    public TimeSeries queryByWindow(MetricCode metricCode, Scope scope, ComparisonWindow window) {
+        Objects.requireNonNull(metricCode, "Metric code must not be null");
+        Objects.requireNonNull(scope, "Authenticated scope must not be null");
+        Objects.requireNonNull(window, "Comparison window must not be null");
+        if (metricCode.granularity() != TimeGranularity.DAY || metricCode.scopeType() != ScopeType.STORE) {
+            throw new InvalidTimeSeriesRequestException(
+                    "El parámetro periodo (7_DIAS, 30_DIAS, 90_DIAS) solo aplica a métricas diarias de tienda");
+        }
+        Period period = window.currentPeriod(LocalDate.now(clock));
+        return query(metricCode, scope, period, TimeGranularity.DAY);
+    }
+
     private Period resolvePeriod(MetricCode metricCode, Period requestedPeriod) {
         LocalDate today = LocalDate.now(clock);
         YearMonth currentMonth = YearMonth.from(today);
@@ -92,8 +106,9 @@ public class QueryTimeSeriesUseCaseImpl implements QueryTimeSeriesUseCase {
         }
 
         if (metricCode == MetricCode.PLATFORM_SUBSCRIPTION_REVENUE) {
-            throw new InvalidTimeSeriesRequestException(
-                    "A startDate and endDate are required for historical subscription revenue");
+            return new Period(
+                    currentMonth.minusMonths(5).atDay(1),
+                    currentMonth.atEndOfMonth());
         }
         if (metricCode.scopeType() == ScopeType.PLATFORM) {
             return new Period(currentMonth.atDay(1), currentMonth.atEndOfMonth());

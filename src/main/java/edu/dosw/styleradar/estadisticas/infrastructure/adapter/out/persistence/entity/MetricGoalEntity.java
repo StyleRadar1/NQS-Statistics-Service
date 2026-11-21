@@ -59,4 +59,8 @@ public class MetricGoalEntity {
     public BigDecimal getTargetValue() {
         return targetValue;
     }
+
+    public void updateTargetValue(BigDecimal targetValue) {
+        this.targetValue = targetValue;
+    }
 }

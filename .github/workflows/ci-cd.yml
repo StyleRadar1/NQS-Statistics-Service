@@ -42,3 +42,55 @@ jobs:
 
       - name: 5. Build Docker Image
         run: docker build -t sr-ms-estadisticas:latest .
+
+  deploy-qa:
+    name: Deploy to QA (develop)
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name acrstyleradarestadisticas
+
+      - name: Build and Push QA Docker Image
+        run: |
+          docker build -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:qa .
+          docker push acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:qa
+
+      - name: Restart QA Web App
+        run: az webapp restart --name sr-ms-estadisticas-qa --resource-group rg-styleradar-estadisticas-qa
+
+  deploy-prod:
+    name: Deploy to PROD (master)
+    needs: build-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name acrstyleradarestadisticas
+
+      - name: Build and Push PROD Docker Image
+        run: |
+          docker build -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:prod .
+          docker push acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:prod
+
+      - name: Restart PROD Web App
+        run: az webapp restart --name sr-ms-estadisticas-prod --resource-group rg-styleradar-estadisticas-prod

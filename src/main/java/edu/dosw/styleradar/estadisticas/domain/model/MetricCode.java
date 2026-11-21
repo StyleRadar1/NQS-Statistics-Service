@@ -8,9 +8,12 @@ public enum MetricCode {
     FOUNDATION_REQUESTS_FROM_USERS(ScopeType.FOUNDATION, TimeGranularity.MONTH),
     FOUNDATION_REQUESTS_FROM_STORES(ScopeType.FOUNDATION, TimeGranularity.MONTH),
     FOUNDATION_GARMENTS_RECEIVED(ScopeType.FOUNDATION, TimeGranularity.MONTH),
+    FOUNDATION_DONATIONS_BY_ORIGIN(ScopeType.FOUNDATION, TimeGranularity.MONTH),
     PLATFORM_SEARCHES(ScopeType.PLATFORM, TimeGranularity.DAY),
     PLATFORM_USER_REGISTRATIONS(ScopeType.PLATFORM, TimeGranularity.DAY),
     PLATFORM_GARMENT_PUBLICATIONS(ScopeType.PLATFORM, TimeGranularity.DAY),
+    PLATFORM_PLAYLISTS_CREATED(ScopeType.PLATFORM, TimeGranularity.DAY),
+    PLATFORM_MONTHLY_DONATIONS(ScopeType.PLATFORM, TimeGranularity.MONTH),
     MODERATION_PUBLICATIONS(ScopeType.PLATFORM, TimeGranularity.DAY),
     PLATFORM_SUBSCRIPTION_REVENUE(ScopeType.PLATFORM, TimeGranularity.MONTH),
     STORE_INVENTORY_BY_STATE(ScopeType.STORE, TimeGranularity.DAY),
@@ -18,9 +21,11 @@ public enum MetricCode {
     FOUNDATION_REQUESTS_BY_STATE(ScopeType.FOUNDATION, TimeGranularity.MONTH),
     PLATFORM_BUYERS_BY_PLAN(ScopeType.PLATFORM, TimeGranularity.MONTH),
     PLATFORM_STORES_BY_PLAN(ScopeType.PLATFORM, TimeGranularity.MONTH),
+    PLATFORM_STORES_BY_VERIFICATION(ScopeType.PLATFORM, TimeGranularity.DAY),
     STORE_REALTIME_VISITORS(ScopeType.STORE, TimeGranularity.DAY, true),
     PLATFORM_REALTIME_USERS(ScopeType.PLATFORM, TimeGranularity.DAY, true),
     PLATFORM_ACTIVE_USERS(ScopeType.PLATFORM, TimeGranularity.DAY, true),
+    PLATFORM_ACTIVE_FOUNDATIONS(ScopeType.PLATFORM, TimeGranularity.DAY, true),
     PLATFORM_ALERTS_CREATED(ScopeType.PLATFORM, TimeGranularity.DAY);
 
     private final ScopeType scopeType;

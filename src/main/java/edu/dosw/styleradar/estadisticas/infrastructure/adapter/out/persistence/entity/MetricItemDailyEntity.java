@@ -73,4 +73,22 @@ public class MetricItemDailyEntity {
         this.day = day;
         this.value = value;
     }
+
+    public long getValue() {
+        return value;
+    }
+
+    public void clearValue() {
+        this.value = 0L;
+    }
+
+    public void adjustValue(long delta) {
+        this.value = Math.max(0L, this.value + delta);
+    }
+
+    public void updateItemName(String itemName) {
+        if (itemName != null && !itemName.isBlank()) {
+            this.itemName = itemName;
+        }
+    }
 }

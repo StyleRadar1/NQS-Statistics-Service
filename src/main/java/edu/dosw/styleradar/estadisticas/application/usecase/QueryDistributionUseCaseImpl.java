@@ -28,9 +28,17 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
             CategoryCode.AVAILABLE,
             CategoryCode.LOW_STOCK,
             CategoryCode.OUT_OF_STOCK);
-    private static final List<CategoryCode> PLAN_CATEGORIES = List.of(
+    private static final List<CategoryCode> BUYER_PLAN_CATEGORIES = List.of(
             CategoryCode.PLAN_RADAR,
             CategoryCode.PLAN_RADAR_PLUS);
+    private static final List<CategoryCode> STORE_PLAN_CATEGORIES = List.of(
+            CategoryCode.PLAN_STORE_MONTHLY);
+    private static final List<CategoryCode> DONATION_ORIGIN_CATEGORIES = List.of(
+            CategoryCode.ORIGIN_STORE,
+            CategoryCode.ORIGIN_USER);
+    private static final List<CategoryCode> STORE_VERIFICATION_CATEGORIES = List.of(
+            CategoryCode.APPROVED,
+            CategoryCode.PENDING);
     private static final BigDecimal PERCENTAGE_MULTIPLIER = BigDecimal.valueOf(100);
 
     private final MetricRepositoryPort metricRepository;
@@ -66,10 +74,12 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
     private boolean isDistributionMetric(MetricCode metricCode) {
         return switch (metricCode) {
             case STORE_INVENTORY_BY_STATE,
+                    FOUNDATION_DONATIONS_BY_ORIGIN,
                     FOUNDATION_GARMENTS_BY_TYPE,
                     FOUNDATION_REQUESTS_BY_STATE,
                     PLATFORM_BUYERS_BY_PLAN,
-                    PLATFORM_STORES_BY_PLAN -> true;
+                    PLATFORM_STORES_BY_PLAN,
+                    PLATFORM_STORES_BY_VERIFICATION -> true;
             default -> false;
         };
     }
@@ -89,7 +99,10 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
     ) {
         return switch (metricCode) {
             case STORE_INVENTORY_BY_STATE -> INVENTORY_CATEGORIES;
-            case PLATFORM_BUYERS_BY_PLAN, PLATFORM_STORES_BY_PLAN -> PLAN_CATEGORIES;
+            case FOUNDATION_DONATIONS_BY_ORIGIN -> DONATION_ORIGIN_CATEGORIES;
+            case PLATFORM_BUYERS_BY_PLAN -> BUYER_PLAN_CATEGORIES;
+            case PLATFORM_STORES_BY_PLAN -> STORE_PLAN_CATEGORIES;
+            case PLATFORM_STORES_BY_VERIFICATION -> STORE_VERIFICATION_CATEGORIES;
             case FOUNDATION_GARMENTS_BY_TYPE, FOUNDATION_REQUESTS_BY_STATE -> countsByCategory.keySet()
                     .stream()
                     .sorted(Comparator.comparing(CategoryCode::value))
@@ -112,10 +125,10 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
                 .map(category -> {
                     long count = countsByCategory.getOrDefault(category, 0L);
                     BigDecimal percentage = total.signum() == 0
-                            ? BigDecimal.ZERO.setScale(1)
+                            ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
                             : BigDecimal.valueOf(count)
                                     .multiply(PERCENTAGE_MULTIPLIER)
-                                    .divide(total, 1, RoundingMode.HALF_UP);
+                                    .divide(total, 2, RoundingMode.HALF_UP);
                     return new DistributionEntry(category, count, percentage);
                 })
                 .toList();

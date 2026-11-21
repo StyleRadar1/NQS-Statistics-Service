@@ -12,4 +12,13 @@ public interface PendingModerationRepositoryPort {
             MetricCode metricCode,
             Scope scope,
             List<CategoryCode> publisherTypes);
+
+    default long resolvePendingByPublisher(
+            MetricCode metricCode,
+            Scope scope,
+            CategoryCode publisherType,
+            String targetId
+    ) {
+        throw new UnsupportedOperationException("Resolving pending moderation is not supported");
+    }
 }

@@ -13,11 +13,11 @@ public class OpenApiConfig {
     public OpenAPI estadisticasOpenAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("StyleRadar · Microservicio de Estadisticas")
-                .description("Microservicio de Estadisticas de StyleRadar (Paquete 4). Gestiona el servicio de estadisticas para los usuarios")
+                .title("StyleRadar · Statistics Microservice")
+                .description("StyleRadar Statistics API (Package 4). Exposes metrics by scope, period, and metric code.")
                 .version("v1.0")
                 .contact(new Contact()
-                    .name("Equipo DOSW")
+                    .name("DOSW Team")
                     .email("dosw@eci.edu.co")));
     }
 }

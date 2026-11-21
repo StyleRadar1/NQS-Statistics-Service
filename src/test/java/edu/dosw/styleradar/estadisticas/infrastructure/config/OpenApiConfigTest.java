@@ -14,7 +14,7 @@ class OpenApiConfigTest {
 
         assertNotNull(openAPI);
         assertNotNull(openAPI.getInfo());
-        assertEquals("StyleRadar · Microservicio de Estadisticas", openAPI.getInfo().getTitle());
+        assertEquals("StyleRadar · Statistics Microservice", openAPI.getInfo().getTitle());
         assertEquals("v1.0", openAPI.getInfo().getVersion());
     }
 }

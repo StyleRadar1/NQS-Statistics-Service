@@ -4,11 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-@Schema(description = "Publicadores agrupados por tipo de origen")
+@Schema(description = "Publishers grouped by origin type")
 public record PendingModerationGroupDto(
-        @Schema(description = "Tipo de publicador", example = "ORIGIN_STORE")
+        @Schema(description = "Publisher type", example = "ORIGIN_STORE")
         String publisherType,
-        @Schema(description = "Publicadores y sus conteos pendientes")
+        @Schema(description = "Publishers and their pending counts")
         List<PendingModerationPublisherDto> publishers
 ) {
 }

@@ -77,6 +77,29 @@ class JwtTokenValidatorTest {
                 "sub", "buyer-1",
                 "roles", List.of("COMPRADOR")));
         assertEquals("COMPRADOR", validator.validateAndExtract(buyerToken).role());
+
+        String srAdminToken = signToken(TEST_SECRET, Map.of(
+                "sub", "admin-sr-1",
+                "roles", List.of("STYLERADAR_ADMIN")));
+        assertEquals("PLATFORM_ADMIN", validator.validateAndExtract(srAdminToken).role());
+
+        String srFoundationToken = signToken(TEST_SECRET, Map.of(
+                "sub", "fund-sr-1",
+                "roles", List.of("FOUNDATION_REPRESENTATIVE")));
+        AuthenticatedActor srFoundationActor = validator.validateAndExtract(srFoundationToken);
+        assertEquals("FOUNDATION_ADMIN", srFoundationActor.role());
+        assertEquals("fund-sr-1", srFoundationActor.foundationId());
+
+        String srBuyerToken = signToken(TEST_SECRET, Map.of(
+                "sub", "buyer-sr-1",
+                "roles", List.of("BUYER")));
+        assertEquals("COMPRADOR", validator.validateAndExtract(srBuyerToken).role());
+
+        String nitStoreToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-77",
+                "roles", List.of("STORE_ADMIN"),
+                "nit", "900123456-1"));
+        assertEquals("900123456-1", validator.validateAndExtract(nitStoreToken).storeId());
     }
 
     @Test

@@ -38,13 +38,14 @@ class QueryRealTimeCountUseCaseTest {
     }
 
     @Test
-    void returnsActiveUsersForBothPlatformMetrics() {
+    void returnsActiveUsersAndFoundationsForPlatformMetrics() {
         Scope scope = new Scope("platform", ScopeType.PLATFORM);
         counter.activeCount = 12;
 
         for (MetricCode metricCode : new MetricCode[] {
                 MetricCode.PLATFORM_REALTIME_USERS,
-                MetricCode.PLATFORM_ACTIVE_USERS
+                MetricCode.PLATFORM_ACTIVE_USERS,
+                MetricCode.PLATFORM_ACTIVE_FOUNDATIONS
         }) {
             var result = useCase.query(metricCode, scope);
 
@@ -52,7 +53,7 @@ class QueryRealTimeCountUseCaseTest {
             assertEquals(metricCode, result.metricCode());
         }
 
-        assertEquals(2, counter.calls);
+        assertEquals(3, counter.calls);
         assertEquals(scope, counter.lastScope);
     }
 

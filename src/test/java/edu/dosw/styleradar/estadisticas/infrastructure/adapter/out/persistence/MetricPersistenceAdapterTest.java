@@ -93,6 +93,11 @@ class MetricPersistenceAdapterTest {
         assertEquals(0, new BigDecimal("12.00").compareTo(points.get(0).value()));
         assertEquals(LocalDate.of(2026, 11, 5), points.get(1).date());
         assertEquals(0, new BigDecimal("18.00").compareTo(points.get(1).value()));
+
+        assertEquals(0, new BigDecimal("30.00").compareTo(
+                adapter.sumAllDailyPoints(MetricCode.STORE_PAGE_VISITS, scope)));
+        assertEquals(0, BigDecimal.ZERO.compareTo(
+                adapter.sumAllDailyPoints(MetricCode.STORE_MESSAGES_RECEIVED, scope)));
     }
 
     @Test
@@ -113,6 +118,13 @@ class MetricPersistenceAdapterTest {
         assertTrue(found.isPresent());
         assertEquals(0, new BigDecimal("250.00").compareTo(found.get()));
         assertTrue(missing.isEmpty());
+
+        adapter.upsertGoalTarget(MetricCode.STORE_PAGE_VISITS, scope, start, new BigDecimal("300.00"));
+        adapter.upsertGoalTarget(MetricCode.STORE_PAGE_VISITS, scope, start.plusWeeks(1), new BigDecimal("400.00"));
+        assertEquals(0, new BigDecimal("300.00")
+                .compareTo(adapter.findGoalTarget(MetricCode.STORE_PAGE_VISITS, scope, start).orElseThrow()));
+        assertEquals(0, new BigDecimal("400.00")
+                .compareTo(adapter.findGoalTarget(MetricCode.STORE_PAGE_VISITS, scope, start.plusWeeks(1)).orElseThrow()));
     }
 
     @Test
@@ -179,6 +191,20 @@ class MetricPersistenceAdapterTest {
         assertEquals(CategoryCode.ORIGIN_USER, publishers.get(1).publisherType());
         assertEquals("user-9", publishers.get(1).publisherId());
         assertEquals(2L, publishers.get(1).pendingCount());
+
+        long resolved = adapter.resolvePendingByPublisher(
+                MetricCode.MODERATION_PUBLICATIONS,
+                platformScope,
+                CategoryCode.ORIGIN_STORE,
+                "store-17");
+        assertEquals(4L, resolved);
+
+        List<PendingModerationPublisherCount> afterResolve = adapter.findPendingModerationPublishers(
+                MetricCode.MODERATION_PUBLICATIONS,
+                platformScope,
+                List.of(CategoryCode.ORIGIN_STORE, CategoryCode.ORIGIN_USER));
+        assertEquals(1, afterResolve.size());
+        assertEquals("user-9", afterResolve.getFirst().publisherId());
     }
 
     @Test
@@ -198,6 +224,37 @@ class MetricPersistenceAdapterTest {
         assertEquals(1, counts.size());
         assertEquals(CategoryCode.AVAILABLE, counts.getFirst().categoryCode());
         assertEquals(12L, counts.getFirst().count());
+
+        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.AVAILABLE, 3L);
+        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.LOW_STOCK, 2L);
+        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.LOW_STOCK, -10L);
+        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.OUT_OF_STOCK, -1L);
+        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.OUT_OF_STOCK, 0L);
+
+        List<DistributionCount> updatedCounts = adapter.findDistributionCounts(
+                MetricCode.STORE_INVENTORY_BY_STATE,
+                storeScope);
+        assertEquals(15L, updatedCounts.stream()
+                .filter(c -> c.categoryCode().equals(CategoryCode.AVAILABLE)).findFirst().orElseThrow().count());
+        assertEquals(0L, updatedCounts.stream()
+                .filter(c -> c.categoryCode().equals(CategoryCode.LOW_STOCK)).findFirst().orElseThrow().count());
+
+        LocalDate itemDay = LocalDate.of(2026, 11, 21);
+        adapter.upsertItemDailyIncrement(
+                MetricCode.STORE_GARMENTS_BY_SAVES, storeScope, null, "g-new", "Abrigo Lana", itemDay, 4L);
+        adapter.upsertItemDailyIncrement(
+                MetricCode.STORE_GARMENTS_BY_SAVES, storeScope, null, "g-new", "Abrigo Lana Premium", itemDay, -1L);
+        adapter.upsertItemDailyIncrement(
+                MetricCode.STORE_GARMENTS_BY_SAVES, storeScope, null, "g-ignored", "Ignorado", itemDay, 0L);
+        adapter.upsertItemDailyIncrement(
+                MetricCode.STORE_GARMENTS_BY_SAVES, storeScope, null, "g-negative", "Negativo", itemDay, -2L);
+
+        List<GarmentSavesCount> savedItems = adapter.findItemMetricTotals(
+                MetricCode.STORE_GARMENTS_BY_SAVES, storeScope);
+        assertEquals(1, savedItems.size());
+        assertEquals("g-new", savedItems.getFirst().itemId());
+        assertEquals("Abrigo Lana Premium", savedItems.getFirst().name());
+        assertEquals(3L, savedItems.getFirst().savesCount());
 
         MetricDailyJpaRepository mockDailyRepo = mock(MetricDailyJpaRepository.class);
         MetricPersistenceAdapter unitAdapter = new MetricPersistenceAdapter(

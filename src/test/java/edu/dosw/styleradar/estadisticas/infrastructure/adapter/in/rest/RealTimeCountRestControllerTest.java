@@ -38,7 +38,7 @@ class RealTimeCountRestControllerTest {
         when(useCase.query(MetricCode.STORE_REALTIME_VISITORS, scope))
                 .thenReturn(new RealTimeCount(MetricCode.STORE_REALTIME_VISITORS, scope, 6));
 
-        mockMvc.perform(get("/api/v1/statistics/realtime/STORE_REALTIME_VISITORS"))
+        mockMvc.perform(get("/statistics/realtime/STORE_REALTIME_VISITORS"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metricCode").value("STORE_REALTIME_VISITORS"))
                 .andExpect(jsonPath("$.scopeType").value("STORE"))

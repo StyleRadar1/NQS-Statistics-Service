@@ -3,6 +3,8 @@ package edu.dosw.styleradar.estadisticas.application.usecase;
 import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeException;
 import edu.dosw.styleradar.estadisticas.domain.model.CategoryCode;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
+import edu.dosw.styleradar.estadisticas.domain.model.ModerationDecision;
+import edu.dosw.styleradar.estadisticas.domain.model.ModerationDecisionResult;
 import edu.dosw.styleradar.estadisticas.domain.model.PendingModeration;
 import edu.dosw.styleradar.estadisticas.domain.model.PendingModerationGroup;
 import edu.dosw.styleradar.estadisticas.domain.model.PendingModerationPublisher;
@@ -61,5 +63,44 @@ public class GetPendingModerationUseCaseImpl implements GetPendingModerationUseC
                 .sum();
 
         return new PendingModeration(groups, totalPendingCount, null);
+    }
+
+    @Override
+    public ModerationDecisionResult decide(
+            Scope scope,
+            CategoryCode publisherType,
+            String targetId,
+            ModerationDecision decision
+    ) {
+        Objects.requireNonNull(scope, "Authenticated scope must not be null");
+        if (scope.type() != ScopeType.PLATFORM) {
+            throw new UnauthorizedScopeException("Only the platform administrator can moderate publications");
+        }
+        Objects.requireNonNull(publisherType, "Publisher type must not be null");
+        if (!PUBLISHER_TYPES.contains(publisherType)) {
+            throw new IllegalArgumentException("Tipo de publicador no soportado: " + publisherType.value());
+        }
+        if (targetId == null || targetId.isBlank()) {
+            throw new IllegalArgumentException("El identificador del grupo o publicación es obligatorio");
+        }
+        Objects.requireNonNull(decision, "Moderation decision must not be null");
+
+        long resolvedCount = pendingModerationRepository.resolvePendingByPublisher(
+                MetricCode.MODERATION_PUBLICATIONS,
+                scope,
+                publisherType,
+                targetId.trim());
+        if (resolvedCount == 0L) {
+            throw new IllegalArgumentException(
+                    "No se encontraron publicaciones pendientes para el identificador: " + targetId.trim());
+        }
+
+        PendingModeration updated = query(scope);
+        return new ModerationDecisionResult(
+                publisherType,
+                targetId.trim(),
+                decision.resultingState(),
+                resolvedCount,
+                updated);
     }
 }
