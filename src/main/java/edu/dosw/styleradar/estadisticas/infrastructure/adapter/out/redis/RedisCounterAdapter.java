@@ -1,8 +1,8 @@
 package edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.redis;
 
+import edu.dosw.styleradar.estadisticas.domain.model.DailyMetricIncrement;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.Scope;
-import edu.dosw.styleradar.estadisticas.domain.model.DailyMetricIncrement;
 import edu.dosw.styleradar.estadisticas.domain.model.ScopeType;
 import edu.dosw.styleradar.estadisticas.domain.port.out.RealTimeCounterPort;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,15 +20,9 @@ import java.util.List;
 @Component
 public class RedisCounterAdapter implements RealTimeCounterPort {
 
-    private static final String COUNTER_KEY_PREFIX = "statistics:realtime:active";
     private static final String DAILY_COUNTER_KEY_PREFIX = "statistics:daily";
     private static final String DAILY_COUNTER_KEYS_KEY = "statistics:daily:pending";
     private static final String PROCESSED_EVENT_KEY_PREFIX = "statistics:processed:event";
-    private static final DefaultRedisScript<Long> ADJUST_ACTIVE_SCRIPT = new DefaultRedisScript<>(
-            "local next = redis.call('INCRBY', KEYS[1], tonumber(ARGV[1])); "
-                    + "if next < 0 then redis.call('SET', KEYS[1], '0'); return 0; end; "
-                    + "return next",
-            Long.class);
     private static final DefaultRedisScript<Long> INCREMENT_DAILY_SCRIPT = new DefaultRedisScript<>(
             "redis.call('INCRBYFLOAT', KEYS[1], ARGV[1]); "
                     + "redis.call('SADD', KEYS[2], KEYS[1]); "
@@ -52,26 +46,6 @@ public class RedisCounterAdapter implements RealTimeCounterPort {
     }
 
     @Override
-    public long countActive(MetricCode metricCode, Scope scope) {
-        String key = COUNTER_KEY_PREFIX + ":" + scope.type().name()
-                + ":" + scope.id() + ":" + metricCode.name();
-        String value = redisTemplate.opsForValue().get(key);
-        if (value == null) {
-            return 0;
-        }
-
-        try {
-            long count = Long.parseLong(value);
-            if (count < 0) {
-                throw new IllegalStateException("Redis real-time counter must not be negative: " + key);
-            }
-            return count;
-        } catch (NumberFormatException exception) {
-            throw new IllegalStateException("Redis real-time counter is not a valid integer: " + key, exception);
-        }
-    }
-
-    @Override
     public boolean markEventProcessed(String eventId, Duration ttl) {
         if (eventId == null || eventId.isBlank()) {
             throw new IllegalArgumentException("Event id must not be blank");
@@ -87,38 +61,6 @@ public class RedisCounterAdapter implements RealTimeCounterPort {
             throw new IllegalStateException("Redis did not confirm event idempotency result");
         }
         return marked;
-    }
-
-    @Override
-    public void incrementActive(MetricCode metricCode, Scope scope, long amount) {
-        if (!metricCode.isRealTime()) {
-            throw new IllegalArgumentException("Metric does not support real-time counts: " + metricCode);
-        }
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Counter increment must be positive");
-        }
-        String key = activeCounterKey(metricCode, scope);
-        if (redisTemplate.opsForValue().increment(key, amount) == null) {
-            throw new IllegalStateException("Redis did not confirm real-time counter increment: " + key);
-        }
-    }
-
-    @Override
-    public void adjustActive(MetricCode metricCode, Scope scope, long delta) {
-        if (!metricCode.isRealTime()) {
-            throw new IllegalArgumentException("Metric does not support real-time counts: " + metricCode);
-        }
-        if (delta == 0L) {
-            return;
-        }
-        String key = activeCounterKey(metricCode, scope);
-        Long result = redisTemplate.execute(
-                ADJUST_ACTIVE_SCRIPT,
-                List.of(key),
-                Long.toString(delta));
-        if (result == null) {
-            throw new IllegalStateException("Redis did not confirm real-time counter adjustment: " + key);
-        }
     }
 
     @Override
@@ -161,11 +103,6 @@ public class RedisCounterAdapter implements RealTimeCounterPort {
             increments.add(parseDailyCounter(key, value));
         }
         return List.copyOf(increments);
-    }
-
-    private String activeCounterKey(MetricCode metricCode, Scope scope) {
-        return COUNTER_KEY_PREFIX + ":" + scope.type().name()
-                + ":" + scope.id() + ":" + metricCode.name();
     }
 
     private String dailyCounterKey(MetricCode metricCode, Scope scope, LocalDate metricDate) {

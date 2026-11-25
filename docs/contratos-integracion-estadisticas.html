@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StyleRadar · Contratos de Integración con ms-estadisticas (8420)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --surface: #0b1120;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-fg: #082f49;
+      --badge-bg: #334155;
+      --badge-fg: #e2e8f0;
+      --code: #7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
+    .flex-between { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); font-weight: 700; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--badge-bg);
+      color: var(--badge-fg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    .badge-primary { background: var(--primary); color: var(--primary-fg); font-weight: 700; }
+    .search-input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      width: 340px;
+      max-width: 100%;
+    }
+    .subbox {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+    }
+    pre {
+      margin: 8px 0 0;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--code);
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--code); }
+    h1 { font-size: 20px; margin: 4px 0; }
+    h2 { font-size: 16px; margin: 0; }
+    p { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+    ul { margin: 4px 0 8px 18px; padding: 0; }
+    .divider { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card flex-between">
+      <div>
+        <div class="label">StyleRadar · Arquitectura Orientada a Eventos · ms-estadisticas : 8420</div>
+        <h1>Guía de Integración para Microservicios Productores</h1>
+        <p>Especificación técnica de Exchange, Routing Keys, Payloads JSON y Claims JWT que cada microservicio debe emitir hacia <code>ms-estadisticas</code>.</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="badge">Exchange: <strong>styleradar.exchange</strong> (topic, durable)</span>
+        <span class="badge">Broker: <strong>5672 / 5671 TLS</strong></span>
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="card">
+        <div class="label">1. Broker RabbitMQ</div>
+        <div style="font-weight:700; font-size:14px; margin-top:4px;">Topic Exchange Durable</div>
+        <p>Publicar siempre al exchange <code>styleradar.exchange</code> con <code>content_type: application/json</code>. <code>ms-estadisticas</code> ya declara sus colas y bindings.</p>
+      </div>
+      <div class="card">
+        <div class="label">2. Idempotencia</div>
+        <div style="font-weight:700; font-size:14px; margin-top:4px;">eventId / eventoId único</div>
+        <p>Todo mensaje debe incluir un ID único en <code>eventId</code> (o <code>eventoId</code>) y fecha ISO-8601 en <code>occurredAt</code> (o <code>fechaCreacion</code>).</p>
+      </div>
+      <div class="card">
+        <div class="label">3. Tolerancia de Campos</div>
+        <div style="font-weight:700; font-size:14px; margin-top:4px;">Alias Español / Inglés</div>
+        <p>El consumidor acepta <code>storeId/tiendaId</code>, <code>foundationId/fundacionId</code>, <code>amount/monto/cantidad</code> e ignora propiedades extra.</p>
+      </div>
+      <div class="card">
+        <div class="label">4. Seguridad JWT (auth:8100)</div>
+        <div style="font-weight:700; font-size:14px; margin-top:4px;">Secreto y Claims compartidos</div>
+        <p>Compartir <code>JWT_SECRET</code> con <code>ms-auth:8100</code> e incluir <code>role</code> + <code>storeId/nit</code> o <code>foundationId</code> en el JWT.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between">
+        <span class="label">Filtrar por Microservicio Encargado (orden de tu listado)</span>
+        <input id="searchInput" class="search-input" type="text" placeholder="Buscar por routing key, evento o RF (ej. SR-RF-76, tienda, pago)..." />
+      </div>
+      <div id="serviceTabs" class="tabs"></div>
+    </div>
+
+    <div id="cardsContainer" style="display:flex; flex-direction:column; gap:16px;"></div>
+  </div>
+
+  <script>
+    const services = [
+      {
+        id: "tiendas",
+        name: "1. ms-tiendas",
+        port: 8140,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.tiendas.#",
+        rfs: ["SR-RF-76.1", "SR-RF-77", "SR-RF-79", "SR-RF-80.1", "SR-RF-81", "SR-RF-86.2"],
+        summary: "Emite eventos cuando un usuario visita el perfil de una tienda y cuando cambia el estado de verificación de una tienda.",
+        events: [
+          {
+            title: "Visita a Página de Tienda",
+            routingKey: "styleradar.tiendas.visita.registrada",
+            eventType: "STORE_VISIT_REGISTERED",
+            metrics: ["STORE_PAGE_VISITS (serie/resumen/meta)", "STORE_REALTIME_VISITORS (tiempo real si delta != 0)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)", "storeId (o tiendaId / scopeId)"],
+            optionalFields: ["delta (+1 al entrar, -1 al salir de la vista en vivo)", "amount (por defecto 1)"],
+            payload: {
+              eventoId: "evt-tnd-visita-9001",
+              tipoEvento: "STORE_VISIT_REGISTERED",
+              tiendaId: "store-17",
+              cantidad: 1,
+              delta: 1,
+              fechaCreacion: "2026-11-21T15:20:00"
+            }
+          },
+          {
+            title: "Cambio de Estado de Verificación de Tienda",
+            routingKey: "styleradar.tiendas.verificacion.actualizada",
+            eventType: "STORE_VERIFICATION_CHANGED",
+            metrics: ["PLATFORM_STORES_BY_VERIFICATION (APPROVED vs PENDING)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)", "estado (APPROVED / PENDING)"],
+            optionalFields: ["estadoAnterior (PENDING al aprobar una tienda que estaba pendiente; null al registrarse por primera vez)"],
+            payload: {
+              eventoId: "evt-tnd-verif-9002",
+              tipoEvento: "STORE_VERIFICATION_CHANGED",
+              tiendaId: "store-17",
+              estadoAnterior: "PENDING",
+              estado: "APPROVED",
+              fechaCreacion: "2026-11-21T15:25:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "chat",
+        name: "2. ms-chat",
+        port: 8320,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.chat.#",
+        rfs: ["SR-RF-76.2", "SR-RF-77"],
+        summary: "Emite un evento cada vez que una tienda recibe un mensaje de un comprador en el chat.",
+        events: [
+          {
+            title: "Mensaje Recibido por Tienda",
+            routingKey: "styleradar.chat.mensaje.recibido",
+            eventType: "STORE_MESSAGE_RECEIVED",
+            metrics: ["STORE_MESSAGES_RECEIVED (serie diaria y resumen con variación 7/30/90 días)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)", "storeId (o tiendaId / scopeId)"],
+            optionalFields: ["amount (por defecto 1)"],
+            payload: {
+              eventoId: "evt-chat-msg-3001",
+              tipoEvento: "STORE_MESSAGE_RECEIVED",
+              tiendaId: "store-17",
+              cantidad: 1,
+              fechaCreacion: "2026-11-21T15:30:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "inventario",
+        name: "3. ms-inventario",
+        port: 8200,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.inventario.#",
+        rfs: ["SR-RF-78.1", "SR-RF-78.2"],
+        summary: "Emite movimientos por variante (prenda, sede y talla). ms-estadisticas clasifica por stockDisponible: 0 = OUT_OF_STOCK, 1-3 = LOW_STOCK y >3 = AVAILABLE.",
+        events: [
+          {
+            title: "Movimiento de inventario (usar para la métrica)",
+            routingKey: "styleradar.inventario.actualizado",
+            eventType: "styleradar.inventario.actualizado",
+            metrics: ["STORE_INVENTORY_BY_STATE (conteo y % AVAILABLE, LOW_STOCK, OUT_OF_STOCK)"],
+            requiredFields: ["eventId o eventoId", "timestamp UTC ISO-8601", "data.sedeId", "data.prendaId", "data.stockAnterior", "data.stockDisponible"],
+            optionalFields: ["data.talla", "data.stockReservado", "data.estado (ACTUALIZADO; no determina la categoría estadística)"],
+            payload: {
+              eventoId: "9c2e8a74-1f3b-4c5d-8e9a-0b1c2d3e4f5a",
+              eventId: "9c2e8a74-1f3b-4c5d-8e9a-0b1c2d3e4f5a",
+              eventType: "styleradar.inventario.actualizado",
+              timestamp: "2026-11-24T23:00:00Z",
+              producer: "ms-inventario",
+              data: {
+                prendaId: "bb6c7f7f-d743-46f3-aa8d-b6d61ef1cfc4",
+                sedeId: "fc942335-ab30-350a-b6a5-577cf0ca2fb5",
+                talla: "M",
+                stockAnterior: 10,
+                stockDisponible: 3,
+                stockReservado: 0,
+                estado: "ACTUALIZADO"
+              }
+            }
+          },
+          {
+            title: "Alerta de últimas unidades (no sumar otra transición)",
+            routingKey: "styleradar.inventario.stock.ultimas-unidades",
+            eventType: "styleradar.inventario.stock.ultimas-unidades",
+            metrics: ["Evento adicional al movimiento; no usar para incrementar el conteo"],
+            requiredFields: ["eventId o eventoId", "timestamp UTC ISO-8601", "data.sedeId", "data.prendaId", "data.stockRestante"],
+            optionalFields: ["data.talla", "data.estado (ULTIMAS_UNIDADES)"],
+            payload: {
+              eventId: "b2c3d4e5-f6a7-4890-bcde-222222222222",
+              eventType: "styleradar.inventario.stock.ultimas-unidades",
+              timestamp: "2026-11-24T23:00:00Z",
+              producer: "ms-inventario",
+              data: {
+                prendaId: "bb6c7f7f-d743-46f3-aa8d-b6d61ef1cfc4",
+                sedeId: "fc942335-ab30-350a-b6a5-577cf0ca2fb5",
+                talla: "M",
+                stockRestante: 3,
+                estado: "ULTIMAS_UNIDADES"
+              }
+            }
+          },
+          {
+            title: "Alerta de agotado (no sumar otra transición)",
+            routingKey: "styleradar.inventario.stock.agotado",
+            eventType: "styleradar.inventario.stock.agotado",
+            metrics: ["Evento adicional al movimiento; no usar para incrementar el conteo"],
+            requiredFields: ["eventId o eventoId", "timestamp UTC ISO-8601", "data.sedeId", "data.prendaId", "data.stockRestante"],
+            optionalFields: ["data.talla", "data.estado (AGOTADA)"],
+            payload: {
+              eventId: "a1b2c3d4-e5f6-4789-abcd-111111111111",
+              eventType: "styleradar.inventario.stock.agotado",
+              timestamp: "2026-11-24T23:00:00Z",
+              producer: "ms-inventario",
+              data: {
+                prendaId: "bb6c7f7f-d743-46f3-aa8d-b6d61ef1cfc4",
+                sedeId: "fc942335-ab30-350a-b6a5-577cf0ca2fb5",
+                talla: "M",
+                stockRestante: 0,
+                estado: "AGOTADA"
+              }
+            }
+          }
+        ]
+      },
+      {
+        id: "item-catalogo",
+        name: "4. ms-item-catalogo",
+        port: 8220,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.catalogo.#",
+        rfs: ["SR-RF-86.4", "SR-RF-87", "SR-RF-88.1"],
+        summary: "Emite eventos de publicación, retiro y cambio de moderación de prendas, además de búsquedas en el catálogo.",
+        events: [
+          {
+            title: "Prenda Publicada en Catálogo",
+            routingKey: "styleradar.catalogo.prenda.publicada",
+            eventType: "GARMENT_PUBLISHED",
+            metrics: [
+              "PLATFORM_GARMENT_PUBLICATIONS (+1 publicación)",
+              "MODERATION_PUBLICATIONS (+1 pendiente para la tienda)"
+            ],
+            requiredFields: [
+              "eventoId o eventId",
+              "fechaEvento UTC ISO-8601",
+              "data.itemId o data.prendaId",
+              "data.tiendaId o data.almacenId"
+            ],
+            optionalFields: ["data.nombrePrenda", "data.categoria", "data.marca", "data.estilo", "data.precio", "data.fechaPublicacion"],
+            payload: {
+              eventoId: "evt-cat-pub-5001",
+              fechaEvento: "2026-11-21T15:40:00Z",
+              data: {
+                itemId: "garment-101",
+                tiendaId: "store-17",
+                nombrePrenda: "Chaqueta vintage",
+                categoria: "JACKET",
+                marca: "Marca",
+                estilo: "Vintage",
+                precio: 89000,
+                fechaPublicacion: "2026-11-21T15:40:00Z"
+              }
+            }
+          },
+          {
+            title: "Prenda Retirada del Catálogo",
+            routingKey: "styleradar.catalogo.prenda.retirada",
+            eventType: "GARMENT_WITHDRAWN",
+            metrics: ["No incrementa PLATFORM_GARMENT_PUBLICATIONS; resta 1 pendiente si seguía pendiente"],
+            requiredFields: [
+              "eventoId o eventId",
+              "fechaEvento UTC ISO-8601",
+              "data.itemId o data.prendaId",
+              "data.tiendaId o data.almacenId"
+            ],
+            optionalFields: ["data.motivo"],
+            payload: {
+              eventoId: "evt-cat-ret-5002",
+              fechaEvento: "2026-11-21T15:42:00Z",
+              data: {
+                itemId: "garment-101",
+                tiendaId: "store-17",
+                motivo: "SOLICITUD_DEL_VENDEDOR"
+              }
+            }
+          },
+          {
+            title: "Cambio de Estado de Moderación",
+            routingKey: "styleradar.catalogo.moderacion.cambiada",
+            eventType: "GARMENT_MODERATION_CHANGED",
+            metrics: ["MODERATION_PUBLICATIONS (-1 pendiente al aprobar o rechazar; PENDIENTE no resta)"],
+            requiredFields: [
+              "eventoId o eventId",
+              "fechaEvento UTC ISO-8601",
+              "data.itemId o data.prendaId",
+              "data.tiendaId o data.almacenId",
+              "data.estadoModeracion (APROBADA | RECHAZADA | PENDIENTE)"
+            ],
+            optionalFields: ["data.observacion"],
+            payload: {
+              eventoId: "evt-cat-mod-5003",
+              fechaEvento: "2026-11-21T15:45:00Z",
+              data: {
+                itemId: "garment-101",
+                tiendaId: "store-17",
+                estadoModeracion: "APROBADA",
+                observacion: "Cumple los requisitos"
+              }
+            }
+          },
+          {
+            title: "Búsqueda Ejecutada en Catálogo",
+            routingKey: "styleradar.catalogo.busqueda.ejecutada",
+            eventType: "CATALOG_SEARCH_EXECUTED",
+            metrics: ["PLATFORM_SEARCHES (serie diaria del mes en curso)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)"],
+            optionalFields: ["cantidad (por defecto 1)"],
+            payload: {
+              eventoId: "evt-cat-busq-5003",
+              tipoEvento: "CATALOG_SEARCH_EXECUTED",
+              cantidad: 1,
+              fechaCreacion: "2026-11-21T15:45:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "segunda-vida-donaciones",
+        name: "5. ms-segunda-vida-donaciones",
+        port: 8520,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.donaciones.#",
+        rfs: ["SR-RF-82.1", "SR-RF-82.2", "SR-RF-83", "SR-RF-84", "SR-RF-85.1", "SR-RF-85.2", "SR-RF-86.6"],
+        summary: "Emite eventos de creación de solicitudes de donación, cambios de estado de solicitudes y recepción/completitud de donaciones.",
+        events: [
+          {
+            title: "Solicitud de Donación Creada",
+            routingKey: "styleradar.donaciones.solicitud.creada",
+            eventType: "DONATION_REQUEST_CREATED",
+            metrics: [
+              "FOUNDATION_REQUESTS_FROM_USERS o FOUNDATION_REQUESTS_FROM_STORES (serie últimos 6 meses)",
+              "FOUNDATION_REQUESTS_BY_STATE (+1 en estado inicial PENDING)"
+            ],
+            requiredFields: [
+              "eventId (o eventoId)",
+              "occurredAt (o fechaCreacion)",
+              "fundacionId (o foundationId / scopeId)",
+              "origen (TIENDA | USUARIO | ORIGIN_STORE | ORIGIN_USER)"
+            ],
+            optionalFields: ["estado (por defecto PENDING)"],
+            payload: {
+              eventoId: "evt-don-sol-6001",
+              tipoEvento: "DONATION_REQUEST_CREATED",
+              fundacionId: "foundation-7",
+              origen: "USUARIO",
+              estado: "PENDING",
+              cantidad: 1,
+              fechaCreacion: "2026-11-21T15:50:00"
+            }
+          },
+          {
+            title: "Cambio de Estado de Solicitud de Donación",
+            routingKey: "styleradar.donaciones.solicitud.estado.actualizado",
+            eventType: "DONATION_REQUEST_STATE_CHANGED",
+            metrics: ["FOUNDATION_REQUESTS_BY_STATE (transición entre PENDING, APPROVED, REJECTED, etc.)"],
+            requiredFields: [
+              "eventId (o eventoId)",
+              "occurredAt (o fechaCreacion)",
+              "fundacionId (o foundationId)",
+              "estadoAnterior",
+              "estado"
+            ],
+            optionalFields: [],
+            payload: {
+              eventoId: "evt-don-est-6002",
+              tipoEvento: "DONATION_REQUEST_STATE_CHANGED",
+              fundacionId: "foundation-7",
+              estadoAnterior: "PENDING",
+              estado: "APPROVED",
+              fechaCreacion: "2026-11-21T15:55:00"
+            }
+          },
+          {
+            title: "Donación Completada / Prendas Recibidas",
+            routingKey: "styleradar.donaciones.completada",
+            eventType: "DONATION_COMPLETED",
+            metrics: [
+              "FOUNDATION_GARMENTS_RECEIVED (total histórico y meta mensual de prendas)",
+              "FOUNDATION_DONATIONS_BY_ORIGIN (ORIGIN_STORE vs ORIGIN_USER)",
+              "FOUNDATION_GARMENTS_BY_TYPE (distribución por tipo de prenda)",
+              "PLATFORM_MONTHLY_DONATIONS (donaciones del mes en curso en plataforma)"
+            ],
+            requiredFields: [
+              "eventId (o eventoId)",
+              "occurredAt (o fechaCreacion)",
+              "fundacionId (o foundationId)",
+              "origen (TIENDA | USUARIO)",
+              "tipoPrenda (ej. TOP, DRESS, JACKET, PANTS)",
+              "cantidad (número de prendas recibidas en la donación)"
+            ],
+            optionalFields: [],
+            payload: {
+              eventoId: "evt-don-comp-6003",
+              tipoEvento: "DONATION_COMPLETED",
+              fundacionId: "foundation-7",
+              origen: "TIENDA",
+              tipoPrenda: "JACKET",
+              cantidad: 12,
+              fechaCreacion: "2026-11-21T16:00:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "usuarios",
+        name: "6. ms-usuarios",
+        port: 8120,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.usuarios.#",
+        rfs: ["SR-RF-86.1", "SR-RF-86.3", "SR-RF-90"],
+        summary: "Notifica activación/desactivación de usuarios y fundaciones activas en la plataforma.",
+        events: [
+          {
+            title: "Cambio de Estado de Fundación Activa",
+            routingKey: "styleradar.usuarios.fundacion.estado",
+            eventType: "FOUNDATION_STATUS_CHANGED",
+            metrics: ["PLATFORM_ACTIVE_FOUNDATIONS (conteo en tiempo real)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)", "delta (+1 activa, -1 inactiva)"],
+            optionalFields: ["fundacionId"],
+            payload: {
+              eventoId: "evt-usr-fnd-7001",
+              tipoEvento: "FOUNDATION_STATUS_CHANGED",
+              fundacionId: "foundation-7",
+              delta: 1,
+              fechaCreacion: "2026-11-21T16:05:00"
+            }
+          },
+          {
+            title: "Actividad / Sesión de Usuario en Plataforma",
+            routingKey: "styleradar.usuarios.sesion.actualizada",
+            eventType: "USER_SESSION_CHANGED",
+            metrics: ["PLATFORM_REALTIME_USERS", "PLATFORM_ACTIVE_USERS"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)", "delta (+1 inicio sesión, -1 cierre/expiración)"],
+            optionalFields: ["tiendaId (si además está visitando una tienda específica)"],
+            payload: {
+              eventoId: "evt-usr-ses-7002",
+              tipoEvento: "USER_SESSION_CHANGED",
+              delta: 1,
+              fechaCreacion: "2026-11-21T16:06:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "auth",
+        name: "7. ms-auth (+ api-gateway)",
+        port: 8100,
+        queue: "JWT / Cabeceras HTTP + styleradar.usuarios.sesion.#",
+        binding: "HS256 JWT_SECRET compartido",
+        rfs: ["Transversal a todos los RFs (Control de Ámbito STORE, FOUNDATION, PLATFORM)"],
+        summary: "Provee la identidad y ámbito autenticado mediante JWT (Authorization: Bearer) o cabeceras propagadas por api-gateway:8080.",
+        events: [
+          {
+            title: "Contrato de Claims JWT y Cabeceras del API Gateway",
+            routingKey: "HTTP Header: Authorization: Bearer <jwt>",
+            eventType: "JWT_CLAIMS_CONTRACT",
+            metrics: ["Resolución automática de Scope (STORE, FOUNDATION, PLATFORM)"],
+            requiredFields: [
+              "Variables de entorno: compartir el mismo JWT_SECRET (HS256, >= 32 bytes)",
+              "Claim role / roles: STORE | TIENDA, FOUNDATION | FOUNDATION_REPRESENTATIVE | FUNDACION, PLATFORM_ADMIN | STYLERADAR_ADMIN | ADMIN",
+              "Claim para tiendas: storeId (o store_id / nit)",
+              "Claim para fundaciones: foundationId (o foundation_id)",
+              "Cabeceras alternativas desde api-gateway:8080: X-Authenticated-Role + X-Authenticated-Store-Id / X-Authenticated-Foundation-Id"
+            ],
+            optionalFields: ["Emisión opcional de USER_SESSION_CHANGED por RabbitMQ al iniciar/cerrar sesión"],
+            payload: {
+              sub: "user-991",
+              role: "STORE",
+              storeId: "store-17",
+              nit: "901456789-1",
+              iat: 1795290000,
+              exp: 1795293600
+            }
+          }
+        ]
+      },
+      {
+        id: "pagos-suscripciones",
+        name: "8. ms-pagos-suscripciones",
+        port: 8400,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.pagos.#",
+        rfs: ["SR-RF-89.1", "SR-RF-89.2", "SR-RF-91.1", "SR-RF-91.2"],
+        summary: "Publica confirmaciones de pago y suspensiones. Los eventos actuales no contienen montos y no permiten calcular ingresos ni reconstruir el estado actual de planes.",
+        events: [
+          {
+            title: "Pago de Suscripción Confirmado",
+            routingKey: "styleradar.pagos.pago.confirmado",
+            eventType: "SUBSCRIPTION_PAYMENT_PROCESSED",
+            metrics: ["Se consume e identifica como pago aprobado; no actualiza ingresos porque el evento no incluye monto ni moneda."],
+            requiredFields: [
+              "Sobre: eventId, eventType, timestamp, data",
+              "data: suscripcionId, suscriptorId, tipoSuscriptor, planId, estado"
+            ],
+            optionalFields: ["data: usuarioId, nit, almacenId"],
+            payload: {
+              eventId: "550e8400-e29b-41d4-a716-446655440000",
+              eventType: "styleradar.pagos.pago.confirmado",
+              version: 1,
+              timestamp: "2026-11-24T15:00:00Z",
+              producer: "ms-pagos-suscripciones",
+              correlationId: "550e8400-e29b-41d4-a716-446655440001",
+              data: {
+                ordenId: 21,
+                suscripcionId: 15,
+                suscriptorId: "2",
+                usuarioId: 2,
+                tipoSuscriptor: "USUARIO",
+                planId: 2,
+                estado: "ACTIVA"
+              }
+            }
+          },
+          {
+            title: "Suscripción Suspendida",
+            routingKey: "styleradar.pagos.suscripcion.suspendida",
+            eventType: "SUBSCRIPTION_SUSPENDED",
+            metrics: ["PLATFORM_SUBSCRIPTION_SUSPENSIONS (transiciones de suspensión por mes, fecha según America/Bogota)"],
+            requiredFields: [
+              "Sobre: eventId, eventType, timestamp, data",
+              "data: suscripcionId, suscriptorId, tipoSuscriptor, planId, fechaFin, motivo"
+            ],
+            optionalFields: [],
+            payload: {
+              eventId: "550e8400-e29b-41d4-a716-446655440004",
+              eventType: "styleradar.pagos.suscripcion.suspendida",
+              version: 1,
+              timestamp: "2026-11-24T15:00:00Z",
+              producer: "ms-pagos-suscripciones",
+              correlationId: "550e8400-e29b-41d4-a716-446655440005",
+              data: {
+                suscripcionId: 15,
+                suscriptorId: "2",
+                tipoSuscriptor: "USUARIO",
+                planId: 2,
+                fechaFin: "2026-12-24",
+                motivo: "FALTA_DE_PAGO"
+              }
+            }
+          }
+        ],
+        limitations: [
+          "El endpoint GET /internal/statistics/payments/summary aún no está implementado; PLATFORM_SUBSCRIPTION_REVENUE no puede calcularse con los eventos actuales.",
+          "No existe evento de pago rechazado ni de cambio de plan.",
+          "Los eventos de pago confirmado incluyen renovaciones; no deben usarse como altas únicas ni para reconstruir PLATFORM_BUYERS_BY_PLAN o PLATFORM_STORES_BY_PLAN.",
+          "La fuente de verdad de planes es GET /api/v1/plans; planId 1=RADAR, 2=RADAR_PLUS, 3=STORE."
+        ]
+      },
+      {
+        id: "playlist",
+        name: "9. ms-playlist",
+        port: 8260,
+        queue: "styleradar.estadisticas.eventos-dominio.q",
+        binding: "styleradar.playlist.#",
+        rfs: ["SR-RF-80.2", "SR-RF-86.5"],
+        summary: "Emite eventos cuando se crea una playlist en la plataforma y cuando un usuario guarda/quita una prenda de una tienda en su playlist.",
+        events: [
+          {
+            title: "Playlist Creada",
+            routingKey: "styleradar.playlist.creada",
+            eventType: "PLAYLIST_CREATED",
+            metrics: ["PLATFORM_PLAYLISTS_CREATED (total acumulado de playlists creadas)"],
+            requiredFields: ["eventId (o eventoId)", "occurredAt (o fechaCreacion)"],
+            optionalFields: ["cantidad (por defecto 1)"],
+            payload: {
+              eventoId: "evt-pl-creada-9101",
+              tipoEvento: "PLAYLIST_CREATED",
+              cantidad: 1,
+              fechaCreacion: "2026-11-21T16:15:00"
+            }
+          },
+          {
+            title: "Prenda Guardada (o Removida) en Playlist",
+            routingKey: "styleradar.playlist.prenda.guardada",
+            eventType: "GARMENT_SAVED_IN_PLAYLIST",
+            metrics: ["STORE_GARMENTS_BY_SAVES (Top 6 prendas más guardadas de la tienda)"],
+            requiredFields: [
+              "eventId (o eventoId)",
+              "occurredAt (o fechaCreacion)",
+              "tiendaId (o storeId: tienda dueña de la prenda)",
+              "prendaId (o itemId: ID de la prenda)",
+              "prendaNombre (o itemName: Nombre de la prenda para el ranking)"
+            ],
+            optionalFields: ["delta (+1 al guardar, -1 al quitar de la playlist)"],
+            payload: {
+              eventoId: "evt-pl-save-9102",
+              tipoEvento: "GARMENT_SAVED_IN_PLAYLIST",
+              tiendaId: "store-17",
+              prendaId: "garment-101",
+              prendaNombre: "Chaqueta Denim Oversize",
+              delta: 1,
+              fechaCreacion: "2026-11-21T16:18:00"
+            }
+          }
+        ]
+      },
+      {
+        id: "notificaciones",
+        name: "10. ms-notificaciones (Ya integrado)",
+        port: 8300,
+        queue: "styleradar.estadisticas.alerta-creada.q",
+        binding: "styleradar.notificaciones.alerta.creada",
+        rfs: ["SR-RF-88.2", "SR-RF-88.3"],
+        summary: "Integración oficial ya activa en cola dedicada para el conteo diario de alertas creadas.",
+        events: [
+          {
+            title: "Alerta Creada",
+            routingKey: "styleradar.notificaciones.alerta.creada",
+            eventType: "AlertaCreada",
+            metrics: ["PLATFORM_ALERTS_CREATED (serie diaria del mes en curso)"],
+            requiredFields: ["eventoId", "alertaId", "usuarioId", "tipoAlerta", "fechaCreacion"],
+            optionalFields: ["itemId", "busquedaGuardadaId", "canal"],
+            payload: {
+              eventoId: "evt-alr-1001",
+              alertaId: 75,
+              usuarioId: 501,
+              tipoAlerta: "ITEM_AGOTADO",
+              itemId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              busquedaGuardadaId: null,
+              canal: "IN_APP",
+              fechaCreacion: "2026-11-21T16:20:00"
+            }
+          }
+        ]
+      }
+    ];
+
+    let activeServiceId = "all";
+    let searchQuery = "";
+
+    function renderTabs() {
+      const container = document.getElementById("serviceTabs");
+      const allBtn = `<button onclick="selectService('all')" class="btn ${activeServiceId === "all" ? "active" : ""}">Todos (${services.length})</button>`;
+      const buttons = services
+        .map((s) => `<button onclick="selectService('${s.id}')" class="btn ${activeServiceId === s.id ? "active" : ""}">${s.name} :${s.port}</button>`)
+        .join("");
+      container.innerHTML = allBtn + buttons;
+    }
+
+    function selectService(id) {
+      activeServiceId = id;
+      renderTabs();
+      renderCards();
+    }
+
+    function copyText(btn, text) {
+      navigator.clipboard.writeText(text);
+      const original = btn.innerText;
+      btn.innerText = "¡Copiado!";
+      setTimeout(() => { btn.innerText = original; }, 1500);
+    }
+
+    function renderCards() {
+      const container = document.getElementById("cardsContainer");
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = services.filter((s) => {
+        if (activeServiceId !== "all" && s.id !== activeServiceId) return false;
+        if (!q) return true;
+        return JSON.stringify(s).toLowerCase().includes(q);
+      });
+
+      container.innerHTML = filtered
+        .map((service) => {
+          const rfsBadges = service.rfs.map((rf) => `<span class="badge">${rf}</span>`).join(" ");
+          const limitationsHtml = service.limitations && service.limitations.length > 0
+            ? `<div class="subbox" style="margin-top:10px;"><div class="label">Limitaciones del contrato</div><ul>${service.limitations.map((limitation) => `<li>${limitation}</li>`).join("")}</ul></div>`
+            : "";
+          const eventsHtml = service.events
+            .map((ev) => {
+              const jsonStr = JSON.stringify(ev.payload, null, 2);
+              const springSnippet =
+                ev.eventType === "JWT_CLAIMS_CONTRACT"
+                  ? `// En ms-auth (8100): incluir claims al firmar el JWT con JWT_SECRET\nJwts.builder()\n    .subject(userId)\n    .claim("role", "STORE")\n    .claim("storeId", storeId)\n    .signWith(secretKey)\n    .compact();`
+                  : `rabbitTemplate.convertAndSend(\n    "styleradar.exchange",\n    "${ev.routingKey}",\n    payload\n);`;
+
+              return `
+                <div class="divider">
+                  <div class="flex-between">
+                    <div>
+                      <strong style="font-size:14px;">${ev.title}</strong>
+                      <span class="badge" style="margin-left:6px;">${ev.eventType}</span>
+                    </div>
+                    <div style="font-size:12px;">Routing Key: <code>${ev.routingKey}</code></div>
+                  </div>
+                  <div class="grid-2" style="margin-top:10px;">
+                    <div class="subbox">
+                      <div class="label">Campos Obligatorios</div>
+                      <ul>${ev.requiredFields.map((f) => `<li><code>${f}</code></li>`).join("")}</ul>
+                      ${ev.optionalFields.length > 0 ? `<div class="label">Campos Opcionales</div><ul>${ev.optionalFields.map((f) => `<li>${f}</li>`).join("")}</ul>` : ""}
+                      <div class="label">Métricas que alimenta</div>
+                      <ul>${ev.metrics.map((m) => `<li>${m}</li>`).join("")}</ul>
+                    </div>
+                    <div class="subbox">
+                      <div class="flex-between">
+                        <span class="label">Payload JSON de Ejemplo</span>
+                        <div style="display:flex; gap:6px;">
+                          <button class="btn" onclick='copyText(this, ${JSON.stringify(jsonStr)})'>Copiar JSON</button>
+                          <button class="btn" onclick='copyText(this, ${JSON.stringify(springSnippet)})'>Copiar Snippet Java</button>
+                        </div>
+                      </div>
+                      <pre>${jsonStr}</pre>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+
+          return `
+            <div class="card">
+              <div class="flex-between">
+                <div>
+                  <h2>${service.name} <span class="badge badge-primary">Puerto ${service.port}</span></h2>
+                  <p>${service.summary}</p>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">${rfsBadges}</div>
+              </div>
+              <div style="margin-top:8px; font-size:12px; color:var(--muted);">
+                Cola destino: <code>${service.queue}</code> &nbsp;|&nbsp; Binding: <code>${service.binding}</code>
+              </div>
+              ${limitationsHtml}
+              ${eventsHtml}
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderCards();
+    });
+
+    renderTabs();
+    renderCards();
+  </script>
+</body>
+</html>

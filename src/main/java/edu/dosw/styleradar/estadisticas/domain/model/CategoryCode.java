@@ -10,10 +10,7 @@ public record CategoryCode(String value) {
     public static final CategoryCode PLAN_RADAR = new CategoryCode("PLAN_RADAR");
     public static final CategoryCode PLAN_RADAR_PLUS = new CategoryCode("PLAN_RADAR_PLUS");
     public static final CategoryCode PLAN_STORE_MONTHLY = new CategoryCode("PLAN_STORE_MONTHLY");
-    public static final CategoryCode APPROVED = new CategoryCode("APPROVED");
-    public static final CategoryCode PENDING = new CategoryCode("PENDING");
-    public static final CategoryCode ORIGIN_STORE = new CategoryCode("ORIGIN_STORE");
-    public static final CategoryCode ORIGIN_USER = new CategoryCode("ORIGIN_USER");
+    public static final CategoryCode SUSPENDED = new CategoryCode("SUSPENDED");
 
     public CategoryCode {
         Objects.requireNonNull(value, "Category code must not be null");

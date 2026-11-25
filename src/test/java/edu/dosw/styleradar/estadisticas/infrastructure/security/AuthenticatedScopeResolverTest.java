@@ -32,10 +32,10 @@ class AuthenticatedScopeResolverTest {
 
         assertEquals(
                 new Scope("store-17", ScopeType.STORE),
-                resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.PLATFORM_SEARCHES));
+                () -> resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
     }
 
     @Test
@@ -46,12 +46,12 @@ class AuthenticatedScopeResolverTest {
                 resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         authenticate(new AuthenticatedActor("PLATFORM_ADMIN", null, null));
         assertEquals(
                 new Scope("platform", ScopeType.PLATFORM),
-                resolver.resolve(MetricCode.PLATFORM_SEARCHES));
+                resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
         assertThrows(
                 UnauthorizedScopeException.class,
                 () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
@@ -59,12 +59,12 @@ class AuthenticatedScopeResolverTest {
         authenticate(new AuthenticatedActor("STORE_ADMIN", "   ", null));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         authenticate(new AuthenticatedActor("BUYER", "store-1", null));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
     }
 
     @Test
@@ -72,19 +72,19 @@ class AuthenticatedScopeResolverTest {
         SecurityContextHolder.clearContext();
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.unauthenticated("anonymous", null));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated("not-an-actor", null, java.util.List.of()));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
     }
 
     @Test
@@ -95,7 +95,7 @@ class AuthenticatedScopeResolverTest {
         filter.doFilter(storeReq, new MockHttpServletResponse(), new MockFilterChain());
         assertEquals(
                 new Scope("store-99", ScopeType.STORE),
-                resolver.resolve(MetricCode.STORE_PAGE_VISITS));
+                resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         SecurityContextHolder.clearContext();
         MockHttpServletRequest foundationReq = new MockHttpServletRequest();
@@ -112,7 +112,7 @@ class AuthenticatedScopeResolverTest {
         filter.doFilter(platformReq, new MockHttpServletResponse(), new MockFilterChain());
         assertEquals(
                 new Scope("platform", ScopeType.PLATFORM),
-                resolver.resolve(MetricCode.PLATFORM_SEARCHES));
+                resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
 
         SecurityContextHolder.clearContext();
         MockHttpServletRequest missingStoreReq = new MockHttpServletRequest();
