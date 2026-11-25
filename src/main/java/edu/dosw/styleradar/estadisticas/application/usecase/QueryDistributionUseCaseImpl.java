@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +30,8 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
             CategoryCode.PLAN_RADAR,
             CategoryCode.PLAN_RADAR_PLUS);
     private static final List<CategoryCode> STORE_PLAN_CATEGORIES = List.of(
-            CategoryCode.PLAN_STORE_MONTHLY);
-    private static final List<CategoryCode> DONATION_ORIGIN_CATEGORIES = List.of(
-            CategoryCode.ORIGIN_STORE,
-            CategoryCode.ORIGIN_USER);
-    private static final List<CategoryCode> STORE_VERIFICATION_CATEGORIES = List.of(
-            CategoryCode.APPROVED,
-            CategoryCode.PENDING);
+            CategoryCode.PLAN_STORE_MONTHLY,
+            CategoryCode.SUSPENDED);
     private static final BigDecimal PERCENTAGE_MULTIPLIER = BigDecimal.valueOf(100);
 
     private final MetricRepositoryPort metricRepository;
@@ -54,34 +47,17 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
         if (metricCode.scopeType() != scope.type()) {
             throw new UnauthorizedScopeException("The authenticated scope cannot access this metric");
         }
-        if (!isDistributionMetric(metricCode)) {
-            throw new UnsupportedMetricScopeException(
-                    "Metric " + metricCode + " does not support distribution queries");
-        }
 
+        List<CategoryCode> categories = categoriesFor(metricCode);
         List<DistributionCount> counts = Objects.requireNonNull(
                 metricRepository.findDistributionCounts(metricCode, scope),
                 "Distribution counts must not be null");
         Map<CategoryCode, Long> countsByCategory = aggregateCounts(counts);
-        List<CategoryCode> categories = categoriesFor(metricCode, countsByCategory);
         if (countsByCategory.keySet().stream().anyMatch(category -> !categories.contains(category))) {
             throw new IllegalStateException("Distribution contains an unsupported category for " + metricCode);
         }
         List<DistributionEntry> entries = toEntries(categories, countsByCategory);
         return new Distribution(metricCode, scope, entries);
-    }
-
-    private boolean isDistributionMetric(MetricCode metricCode) {
-        return switch (metricCode) {
-            case STORE_INVENTORY_BY_STATE,
-                    FOUNDATION_DONATIONS_BY_ORIGIN,
-                    FOUNDATION_GARMENTS_BY_TYPE,
-                    FOUNDATION_REQUESTS_BY_STATE,
-                    PLATFORM_BUYERS_BY_PLAN,
-                    PLATFORM_STORES_BY_PLAN,
-                    PLATFORM_STORES_BY_VERIFICATION -> true;
-            default -> false;
-        };
     }
 
     private Map<CategoryCode, Long> aggregateCounts(List<DistributionCount> counts) {
@@ -93,20 +69,11 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
         return countsByCategory;
     }
 
-    private List<CategoryCode> categoriesFor(
-            MetricCode metricCode,
-            Map<CategoryCode, Long> countsByCategory
-    ) {
+    private List<CategoryCode> categoriesFor(MetricCode metricCode) {
         return switch (metricCode) {
             case STORE_INVENTORY_BY_STATE -> INVENTORY_CATEGORIES;
-            case FOUNDATION_DONATIONS_BY_ORIGIN -> DONATION_ORIGIN_CATEGORIES;
             case PLATFORM_BUYERS_BY_PLAN -> BUYER_PLAN_CATEGORIES;
             case PLATFORM_STORES_BY_PLAN -> STORE_PLAN_CATEGORIES;
-            case PLATFORM_STORES_BY_VERIFICATION -> STORE_VERIFICATION_CATEGORIES;
-            case FOUNDATION_GARMENTS_BY_TYPE, FOUNDATION_REQUESTS_BY_STATE -> countsByCategory.keySet()
-                    .stream()
-                    .sorted(Comparator.comparing(CategoryCode::value))
-                    .toList();
             default -> throw new UnsupportedMetricScopeException(
                     "Metric " + metricCode + " does not support distribution queries");
         };
@@ -116,12 +83,11 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
             List<CategoryCode> categories,
             Map<CategoryCode, Long> countsByCategory
     ) {
-        List<CategoryCode> completeCategories = new ArrayList<>(categories);
-        BigDecimal total = completeCategories.stream()
+        BigDecimal total = categories.stream()
                 .map(category -> BigDecimal.valueOf(countsByCategory.getOrDefault(category, 0L)))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return completeCategories.stream()
+        return categories.stream()
                 .map(category -> {
                     long count = countsByCategory.getOrDefault(category, 0L);
                     BigDecimal percentage = total.signum() == 0

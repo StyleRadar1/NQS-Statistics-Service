@@ -17,6 +17,6 @@ public record MetricTotalResponseDto(
         @Schema(description = "Covered period when applicable (null for all-time cumulative total)")
         PeriodDto period,
         @Schema(description = "Calculated total value", example = "128")
-        BigDecimal total
+        long total
 ) {
 }

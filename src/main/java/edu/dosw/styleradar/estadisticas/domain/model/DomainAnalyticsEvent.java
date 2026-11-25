@@ -11,9 +11,6 @@ public record DomainAnalyticsEvent(
         String scopeId,
         CategoryCode categoryCode,
         CategoryCode previousCategoryCode,
-        CategoryCode origin,
-        String itemId,
-        String itemName,
         BigDecimal amount,
         long delta,
         PaymentStatus paymentStatus

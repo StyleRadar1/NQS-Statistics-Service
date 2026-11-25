@@ -156,14 +156,14 @@ class JwtTokenValidatorTest {
         filter.doFilter(validReq, validRes, new MockFilterChain());
 
         assertEquals(200, validRes.getStatus());
-        assertEquals(new Scope("store-44", ScopeType.STORE), scopeResolver.resolve(MetricCode.STORE_PAGE_VISITS));
+        assertEquals(new Scope("store-44", ScopeType.STORE), scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
 
         SecurityContextHolder.clearContext();
         String invalidToken = signToken(OTHER_SECRET, Map.of(
                 "sub", "store-44",
                 "roles", List.of("ADMIN_ALMACEN")));
         MockHttpServletRequest invalidReq = new MockHttpServletRequest();
-        invalidReq.setRequestURI("/api/v1/statistics/realtime/STORE_REALTIME_VISITORS");
+        invalidReq.setRequestURI("/api/v1/statistics/distributions/STORE_INVENTORY_BY_STATE");
         invalidReq.addHeader("Authorization", "Bearer " + invalidToken);
         MockHttpServletResponse invalidRes = new MockHttpServletResponse();
         filter.doFilter(invalidReq, invalidRes, new MockFilterChain());
@@ -178,7 +178,7 @@ class JwtTokenValidatorTest {
         MockHttpServletRequest buyerReq = new MockHttpServletRequest();
         buyerReq.addHeader("Authorization", "Bearer " + buyerToken);
         filter.doFilter(buyerReq, new MockHttpServletResponse(), new MockFilterChain());
-        assertThrows(UnauthorizedScopeException.class, () -> scopeResolver.resolve(MetricCode.STORE_PAGE_VISITS));
+        assertThrows(UnauthorizedScopeException.class, () -> scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
     }
 
     private String signToken(String base64Secret, Map<String, Object> claims) throws Exception {

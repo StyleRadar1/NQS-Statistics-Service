@@ -4,7 +4,6 @@ import edu.dosw.styleradar.estadisticas.domain.exception.UnauthorizedScopeExcept
 import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeException;
 import edu.dosw.styleradar.estadisticas.domain.model.CategoryCode;
 import edu.dosw.styleradar.estadisticas.domain.model.DistributionCount;
-import edu.dosw.styleradar.estadisticas.domain.model.GarmentSavesCount;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
 import edu.dosw.styleradar.estadisticas.domain.model.Period;
 import edu.dosw.styleradar.estadisticas.domain.model.Point;
@@ -15,9 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,29 +53,6 @@ class QueryDistributionUseCaseTest {
     }
 
     @Test
-    void calculatesFoundationGarmentTypeCountsAndPercentagesForAuthenticatedFoundation() {
-        repository.counts = List.of(count("TOP", 3), count("DRESS", 2));
-
-        var result = useCase.query(MetricCode.FOUNDATION_GARMENTS_BY_TYPE, FOUNDATION_SCOPE);
-
-        assertEquals(2, result.entries().size());
-        assertEntry(result.entries().get(0), "DRESS", 2, "40.0");
-        assertEntry(result.entries().get(1), "TOP", 3, "60.0");
-        assertRequested(MetricCode.FOUNDATION_GARMENTS_BY_TYPE, FOUNDATION_SCOPE);
-    }
-
-    @Test
-    void calculatesFoundationRequestStateCountsAndPercentagesForAuthenticatedFoundation() {
-        repository.counts = List.of(count("PENDING", 1), count("APPROVED", 3));
-
-        var result = useCase.query(MetricCode.FOUNDATION_REQUESTS_BY_STATE, FOUNDATION_SCOPE);
-
-        assertEntry(result.entries().get(0), "APPROVED", 3, "75.0");
-        assertEntry(result.entries().get(1), "PENDING", 1, "25.0");
-        assertRequested(MetricCode.FOUNDATION_REQUESTS_BY_STATE, FOUNDATION_SCOPE);
-    }
-
-    @Test
     void calculatesPlatformBuyerPlanCountsAndPercentages() {
         repository.counts = List.of(count("PLAN_RADAR", 4), count("PLAN_RADAR_PLUS", 1));
 
@@ -91,97 +65,45 @@ class QueryDistributionUseCaseTest {
 
     @Test
     void calculatesPlatformStorePlanCountsAndPercentages() {
-        repository.counts = List.of(count("PLAN_STORE_MONTHLY", 5));
+        repository.counts = List.of(count("PLAN_STORE_MONTHLY", 4), count("SUSPENDED", 1));
 
         var result = useCase.query(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
 
-        assertEquals(1, result.entries().size());
-        assertEntry(result.entries().get(0), "PLAN_STORE_MONTHLY", 5, "100.00");
+        assertEquals(2, result.entries().size());
+        assertEntry(result.entries().get(0), "PLAN_STORE_MONTHLY", 4, "80.00");
+        assertEntry(result.entries().get(1), "SUSPENDED", 1, "20.00");
         assertRequested(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
 
         repository.counts = List.of();
         var emptyResult = useCase.query(MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM_SCOPE);
         assertEntry(emptyResult.entries().get(0), "PLAN_STORE_MONTHLY", 0, "0.00");
+        assertEntry(emptyResult.entries().get(1), "SUSPENDED", 0, "0.00");
     }
 
     @Test
-    void calculatesFoundationDonationsByOriginAndReturnsZerosWhenEmpty() {
-        repository.counts = List.of(count("ORIGIN_STORE", 3), count("ORIGIN_USER", 1));
+    void returnsAllInventoryStatesAndBuyerPlansAtZeroWhenEmpty() {
+        var inventory = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE);
+        assertEquals(3, inventory.entries().size());
+        assertEntry(inventory.entries().get(0), "AVAILABLE", 0, "0.0");
+        assertEntry(inventory.entries().get(1), "LOW_STOCK", 0, "0.0");
+        assertEntry(inventory.entries().get(2), "OUT_OF_STOCK", 0, "0.0");
 
-        var result = useCase.query(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
-
-        assertEquals(2, result.entries().size());
-        assertEntry(result.entries().get(0), "ORIGIN_STORE", 3, "75.00");
-        assertEntry(result.entries().get(1), "ORIGIN_USER", 1, "25.00");
-        assertRequested(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
-
-        repository.counts = List.of();
-        var emptyResult = useCase.query(MetricCode.FOUNDATION_DONATIONS_BY_ORIGIN, FOUNDATION_SCOPE);
-        assertEntry(emptyResult.entries().get(0), "ORIGIN_STORE", 0, "0.00");
-        assertEntry(emptyResult.entries().get(1), "ORIGIN_USER", 0, "0.00");
+        var buyers = useCase.query(MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM_SCOPE);
+        assertEntry(buyers.entries().get(0), "PLAN_RADAR", 0, "0.0");
+        assertEntry(buyers.entries().get(1), "PLAN_RADAR_PLUS", 0, "0.0");
     }
 
     @Test
-    void calculatesPlatformStoresByVerificationAndReturnsZerosWhenEmpty() {
-        repository.counts = List.of(count("APPROVED", 8), count("PENDING", 2));
-
-        var result = useCase.query(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
-
-        assertEquals(2, result.entries().size());
-        assertEntry(result.entries().get(0), "APPROVED", 8, "80.00");
-        assertEntry(result.entries().get(1), "PENDING", 2, "20.00");
-        assertRequested(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
-
-        repository.counts = List.of();
-        var emptyResult = useCase.query(MetricCode.PLATFORM_STORES_BY_VERIFICATION, PLATFORM_SCOPE);
-        assertEntry(emptyResult.entries().get(0), "APPROVED", 0, "0.00");
-        assertEntry(emptyResult.entries().get(1), "PENDING", 0, "0.00");
-    }
-
-    @Test
-    void returnsAllInventoryStatesAtZeroWhenThereAreNoGarments() {
-        var result = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE);
-
-        assertEquals(3, result.entries().size());
-        assertEntry(result.entries().get(0), "AVAILABLE", 0, "0.0");
-        assertEntry(result.entries().get(1), "LOW_STOCK", 0, "0.0");
-        assertEntry(result.entries().get(2), "OUT_OF_STOCK", 0, "0.0");
-    }
-
-    @Test
-    void returnsEmptyFoundationDistributionWhenThereAreNoRecords() {
-        for (MetricCode metricCode : List.of(
-                MetricCode.FOUNDATION_GARMENTS_BY_TYPE,
-                MetricCode.FOUNDATION_REQUESTS_BY_STATE)) {
-            var result = useCase.query(metricCode, FOUNDATION_SCOPE);
-
-            assertEquals(List.of(), result.entries());
-            assertRequested(metricCode, FOUNDATION_SCOPE);
-        }
-    }
-
-    @Test
-    void returnsBothPlansAtZeroWhenThereAreNoAccounts() {
-        var result = useCase.query(MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM_SCOPE);
-
-        assertEntry(result.entries().get(0), "PLAN_RADAR", 0, "0.0");
-        assertEntry(result.entries().get(1), "PLAN_RADAR_PLUS", 0, "0.0");
-    }
-
-    @Test
-    void rejectsScopesThatDoNotOwnTheRequestedMetric() {
+    void rejectsUnauthorizedScopesUnsupportedMetricsAndUnsupportedCategories() {
         assertThrows(UnauthorizedScopeException.class, () -> useCase.query(
                 MetricCode.STORE_INVENTORY_BY_STATE,
                 FOUNDATION_SCOPE));
 
         assertEquals(0, repository.distributionCalls);
-    }
 
-    @Test
-    void rejectsUnsupportedMetricsAndUnsupportedCategoriesInDistribution() {
         assertThrows(UnsupportedMetricScopeException.class, () -> useCase.query(
-                MetricCode.STORE_PAGE_VISITS,
-                STORE_SCOPE));
+                MetricCode.PLATFORM_PLAYLISTS_CREATED,
+                PLATFORM_SCOPE));
 
         repository.counts = List.of(count("UNSUPPORTED_CATEGORY", 1));
         assertThrows(IllegalStateException.class, () -> useCase.query(
@@ -217,20 +139,6 @@ class QueryDistributionUseCaseTest {
 
         @Override
         public List<Point> findDailyPoints(MetricCode metricCode, Scope scope, Period period) {
-            return List.of();
-        }
-
-        @Override
-        public Optional<BigDecimal> findGoalTarget(
-                MetricCode metricCode,
-                Scope scope,
-                LocalDate periodStartDate
-        ) {
-            return Optional.empty();
-        }
-
-        @Override
-        public List<GarmentSavesCount> findItemMetricTotals(MetricCode metricCode, Scope scope) {
             return List.of();
         }
 

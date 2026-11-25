@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import edu.dosw.styleradar.estadisticas.application.dto.DtoMapper;
-import edu.dosw.styleradar.estadisticas.domain.model.ComparisonWindow;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricCode;
-import edu.dosw.styleradar.estadisticas.domain.model.MetricSummaryWithVariation;
 import edu.dosw.styleradar.estadisticas.domain.model.MetricTotal;
 import edu.dosw.styleradar.estadisticas.domain.model.Period;
 import edu.dosw.styleradar.estadisticas.domain.model.Scope;
 import edu.dosw.styleradar.estadisticas.domain.model.ScopeType;
-import edu.dosw.styleradar.estadisticas.domain.model.VariationStatus;
 import edu.dosw.styleradar.estadisticas.domain.port.in.QueryMetricSummaryUseCase;
 import edu.dosw.styleradar.estadisticas.infrastructure.exception.GlobalExceptionHandler;
 import edu.dosw.styleradar.estadisticas.infrastructure.security.AuthenticatedScopeResolver;
@@ -25,7 +22,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,46 +43,6 @@ class MetricSummaryRestControllerTest {
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
-    }
-
-    @Test
-    void returnsSummaryWithVariation() throws Exception {
-        Scope scope = new Scope("store-17", ScopeType.STORE);
-        when(scopeResolver.resolve(MetricCode.STORE_PAGE_VISITS)).thenReturn(scope);
-        when(useCase.queryWithVariation(MetricCode.STORE_PAGE_VISITS, scope, ComparisonWindow.DIAS_7))
-                .thenReturn(new MetricSummaryWithVariation(
-                        MetricCode.STORE_PAGE_VISITS,
-                        scope,
-                        ComparisonWindow.DIAS_7,
-                        new Period(LocalDate.parse("2026-11-15"), LocalDate.parse("2026-11-21")),
-                        new Period(LocalDate.parse("2026-11-08"), LocalDate.parse("2026-11-14")),
-                        BigDecimal.valueOf(120),
-                        BigDecimal.valueOf(80),
-                        new BigDecimal("50.00"),
-                        VariationStatus.CALCULATED,
-                        null));
-
-        mockMvc.perform(get("/statistics/summary/STORE_PAGE_VISITS").param("periodo", "7_DIAS"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.metricCode").value("STORE_PAGE_VISITS"))
-                .andExpect(jsonPath("$.periodo").value("7_DIAS"))
-                .andExpect(jsonPath("$.total").value(120))
-                .andExpect(jsonPath("$.previousTotal").value(80))
-                .andExpect(jsonPath("$.variationPercentage").value(50.0))
-                .andExpect(jsonPath("$.variationStatus").value("CALCULATED"));
-
-        verify(useCase).queryWithVariation(MetricCode.STORE_PAGE_VISITS, scope, ComparisonWindow.DIAS_7);
-    }
-
-    @Test
-    void rejectsInvalidOrMissingPeriodoWithBadRequest() throws Exception {
-        mockMvc.perform(get("/statistics/summary/STORE_PAGE_VISITS").param("periodo", "15_DIAS"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_PERIOD"));
-
-        mockMvc.perform(get("/statistics/summary/STORE_PAGE_VISITS"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("MISSING_PARAMETER"));
     }
 
     @Test

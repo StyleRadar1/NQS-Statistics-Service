@@ -28,6 +28,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/rabbitmq-ca.pem
+/rabbitmq-truststore.jks
 
 ### STS ###
 .apt_generated
