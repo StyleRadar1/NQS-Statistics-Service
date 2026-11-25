@@ -41,7 +41,7 @@ jobs:
         run: mvn -B package -DskipTests
 
       - name: 5. Build Docker Image
-        run: docker build -t sr-ms-estadisticas:latest .
+        run: docker build --build-arg RABBITMQ_CA_PEM_BASE64="${{ secrets.RABBITMQ_CA_PEM_BASE64 }}" -t sr-ms-estadisticas:latest .
 
   deploy-qa:
     name: Deploy to QA (develop)
@@ -53,6 +53,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Validate RabbitMQ CA Secret
+        run: |
+          if [ -z "${{ secrets.RABBITMQ_CA_PEM_BASE64 }}" ]; then
+            echo "Error: Secret RABBITMQ_CA_PEM_BASE64 is required for QA deployment."
+            exit 1
+          fi
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -63,7 +70,7 @@ jobs:
 
       - name: Build and Push QA Docker Image
         run: |
-          docker build -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:qa .
+          docker build --build-arg RABBITMQ_CA_PEM_BASE64="${{ secrets.RABBITMQ_CA_PEM_BASE64 }}" -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:qa .
           docker push acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:qa
 
       - name: Restart QA Web App
@@ -79,6 +86,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Validate RabbitMQ CA Secret
+        run: |
+          if [ -z "${{ secrets.RABBITMQ_CA_PEM_BASE64 }}" ]; then
+            echo "Error: Secret RABBITMQ_CA_PEM_BASE64 is required for PROD deployment."
+            exit 1
+          fi
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -89,7 +103,7 @@ jobs:
 
       - name: Build and Push PROD Docker Image
         run: |
-          docker build -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:prod .
+          docker build --build-arg RABBITMQ_CA_PEM_BASE64="${{ secrets.RABBITMQ_CA_PEM_BASE64 }}" -t acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:prod .
           docker push acrstyleradarestadisticas.azurecr.io/sr-ms-estadisticas:prod
 
       - name: Restart PROD Web App
