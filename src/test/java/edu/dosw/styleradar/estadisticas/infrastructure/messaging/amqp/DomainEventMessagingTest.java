@@ -5,11 +5,9 @@ import edu.dosw.styleradar.estadisticas.domain.model.CategoryCode;
 import edu.dosw.styleradar.estadisticas.domain.model.DomainAnalyticsEvent;
 import edu.dosw.styleradar.estadisticas.domain.model.DomainEventType;
 import edu.dosw.styleradar.estadisticas.domain.model.PaymentStatus;
-import edu.dosw.styleradar.estadisticas.domain.port.in.ConsolidateCountersUseCase;
 import edu.dosw.styleradar.estadisticas.domain.port.in.ProcessDomainEventUseCase;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.entity.ProcessedEventEntity;
 import edu.dosw.styleradar.estadisticas.infrastructure.adapter.out.persistence.repository.ProcessedEventJpaRepository;
-import edu.dosw.styleradar.estadisticas.infrastructure.scheduling.CounterConsolidationScheduler;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Binding;
@@ -26,6 +24,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
+import org.springframework.transaction.support.TransactionOperations;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -205,7 +204,8 @@ class DomainEventMessagingTest {
     void listenerDeduplicatesEventsAndRoutesInvalidEventsToDlq() throws Exception {
         ProcessDomainEventUseCase useCase = mock(ProcessDomainEventUseCase.class);
         ProcessedEventJpaRepository processedRepo = mock(ProcessedEventJpaRepository.class);
-        DomainEventListener listener = new DomainEventListener(mapper, useCase, processedRepo);
+        DomainEventListener listener = new DomainEventListener(
+                mapper, useCase, processedRepo, TransactionOperations.withoutTransaction());
 
         DomainEventPayload validPayload = payload("evt-dom-1", "PLAYLIST_CREATED");
         when(processedRepo.existsById("evt-dom-1")).thenReturn(false, true);
@@ -251,7 +251,7 @@ class DomainEventMessagingTest {
     }
 
     @Test
-    void configuresExactBindingsAndScheduler() {
+    void configuresExactBindings() {
         RabbitMqConfig config = new RabbitMqConfig();
         TopicExchange exchange = config.analyticsExchange();
         Queue domainQueue = config.domainEventsQueue();
@@ -276,11 +276,6 @@ class DomainEventMessagingTest {
                 DomainEventMapper.SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY,
                 DomainEventMapper.SUBSCRIPTION_PLAN_UPDATED_ROUTING_KEY,
                 DomainEventMapper.DONATION_COMPLETED_ROUTING_KEY), routingKeys);
-
-        ConsolidateCountersUseCase consolidateUseCase = mock(ConsolidateCountersUseCase.class);
-        CounterConsolidationScheduler scheduler = new CounterConsolidationScheduler(consolidateUseCase);
-        scheduler.consolidateCounters();
-        verify(consolidateUseCase).consolidate();
     }
 
     private DomainEventPayload payload(String eventId, String eventType) {

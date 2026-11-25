@@ -175,7 +175,6 @@ flowchart TD
     subgraph INFRA_OUT["Infraestructura de Salida (Driven Adapters)"]
         JPA_REPO["JPA Adapter<br>(Spring Data / PostgreSQL 16)"]
         RABBIT_PUB["RabbitMQ Publisher<br>(Spring AMQP Producer)"]
-        REDIS_ADAPTER["Redis Adapter<br>(Caché & Distributed Locks)"]
     end
 
     REST --> IN_PORT
@@ -185,7 +184,6 @@ flowchart TD
     USE_CASES --> OUT_PORT
     OUT_PORT --> JPA_REPO
     OUT_PORT --> RABBIT_PUB
-    OUT_PORT --> REDIS_ADAPTER
 
     classDef domain fill:#EDE7FF,stroke:#5600EF,stroke-width:2px,color:#0C0C12;
     classDef app fill:#F8FAFC,stroke:#C4B5FD,stroke-width:2px,color:#0C0C12;
@@ -193,7 +191,7 @@ flowchart TD
 
     class DOMAIN,ENTITIES,VO,EVENTS,EXCEPTIONS domain;
     class APP,IN_PORT,USE_CASES,OUT_PORT app;
-    class INFRA_IN,INFRA_OUT,REST,AMQP_IN,JPA_REPO,RABBIT_PUB,REDIS_ADAPTER infra;
+    class INFRA_IN,INFRA_OUT,REST,AMQP_IN,JPA_REPO,RABBIT_PUB infra;
 ```
 
 <div align="center">
@@ -327,7 +325,6 @@ El stack del microservicio cumple con el estándar unificado de arquitectura de 
 | **Lenguaje Core**          | Java LTS          | `21`     | Virtual Threads (Project Loom) para concurrencia masiva I/O sin saturar hilos del OS.          |
 | **Framework Empresarial**  | Spring Boot       | `3.2.9`  | Gestión declarativa de configuración, ecosistema nativo Spring Data y Spring AMQP.           |
 | **Base de Datos**          | PostgreSQL        | `16`     | Integridad transaccional ACID, llaves UUIDv7 y soporte de extensiones espaciales/GIN.          |
-| **Contadores en tiempo real** | Redis            | —        | Conteos activos por métrica y alcance, expuestos con TTL para expirar sesiones y visitantes.   |
 | **Migraciones de BD**      | Flyway            | `10.10.0`   | Control de versiones reproducible de scripts SQL (`V1__init.sql`) en arranque de contenedor. |
 | **Broker de Mensajería**  | RabbitMQ          | `3.12.14-alpine`  | Desacoplamiento temporal de microservicios mediante Topic Exchanges durables.                  |
 | **Procesador de Boilerplate**      | Project Lombok             | `1.18.38`    | Reducción declarativa de código con soporte completo para compiladores Java 21+.|
@@ -354,8 +351,8 @@ El stack del microservicio cumple con el estándar unificado de arquitectura de 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/StyleRadar/NQS-Statistics-Service.git
-cd NQS-Statistics-Service# 2. Levantar servicios de infraestructura en Docker (PostgreSQL, Redis, RabbitMQ)
-docker compose up -d postgres rabbitmq redis
+cd NQS-Statistics-Service# 2. Levantar servicios de infraestructura en Docker (PostgreSQL, RabbitMQ)
+docker compose up -d postgres-estadisticas rabbitmq-estadisticas
 
 # 3. Ejecutar el microservicio localmente
 mvn clean spring-boot:run -Dspring-boot.run.profiles=dev
@@ -411,7 +408,6 @@ Todas las configuraciones sensibles y dependientes de entorno se externalizan me
 | `RABBITMQ_PORT`          | Puerto AMQP de RabbitMQ                      | `5672`                    |        Sí        |
 | `RABBITMQ_USERNAME`      | Usuario de conexión a RabbitMQ              | `guest`                   |        Sí        |
 | `RABBITMQ_PASSWORD`      | Contraseña de conexión a RabbitMQ          | `guest`                   |        Sí        |
-| `REDIS_HOST`             | Hostname del servidor de caché Redis        | `localhost`               |        No        |
 | `JWT_PUBLIC_KEY`         | Clave pública RSA/RS256 para validar tokens | `styleradar-ms-auth`     |        Sí        |
 
 <details>

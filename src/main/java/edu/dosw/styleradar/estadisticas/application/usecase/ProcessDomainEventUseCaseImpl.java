@@ -8,11 +8,10 @@ import edu.dosw.styleradar.estadisticas.domain.model.Scope;
 import edu.dosw.styleradar.estadisticas.domain.model.ScopeType;
 import edu.dosw.styleradar.estadisticas.domain.port.in.ProcessDomainEventUseCase;
 import edu.dosw.styleradar.estadisticas.domain.port.out.MetricRepositoryPort;
-import edu.dosw.styleradar.estadisticas.domain.port.out.RealTimeCounterPort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -21,27 +20,19 @@ import java.util.Objects;
 @Service
 public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase {
 
-    private static final Duration EVENT_IDEMPOTENCY_TTL = Duration.ofHours(24);
     private static final Scope PLATFORM_SCOPE = new Scope("platform", ScopeType.PLATFORM);
     private static final ZoneId BOGOTA_ZONE = ZoneId.of("America/Bogota");
 
-    private final RealTimeCounterPort realTimeCounter;
     private final MetricRepositoryPort metricRepository;
 
-    public ProcessDomainEventUseCaseImpl(
-            RealTimeCounterPort realTimeCounter,
-            MetricRepositoryPort metricRepository
-    ) {
-        this.realTimeCounter = realTimeCounter;
+    public ProcessDomainEventUseCaseImpl(MetricRepositoryPort metricRepository) {
         this.metricRepository = metricRepository;
     }
 
     @Override
+    @Transactional
     public void process(DomainAnalyticsEvent event) {
         Objects.requireNonNull(event, "Domain analytics event must not be null");
-        if (!realTimeCounter.markEventProcessed(event.eventId(), EVENT_IDEMPOTENCY_TTL)) {
-            return;
-        }
 
         LocalDate metricDate = event.occurredAt().atZone(BOGOTA_ZONE).toLocalDate();
         BigDecimal positiveAmount = (event.amount() != null && event.amount().signum() > 0)
@@ -50,7 +41,7 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
 
         switch (event.eventType()) {
             case USER_REGISTERED -> {
-                realTimeCounter.incrementDaily(
+                metricRepository.upsertDailyIncrement(
                         MetricCode.PLATFORM_USER_REGISTRATIONS, PLATFORM_SCOPE, metricDate, BigDecimal.ONE);
                 if (CategoryCode.PLAN_RADAR.equals(event.categoryCode())) {
                     metricRepository.adjustDistributionCount(
@@ -62,15 +53,15 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
                     requireScope(event.scopeId(), ScopeType.STORE),
                     event.previousCategoryCode(),
                     event.categoryCode());
-            case GARMENT_PUBLISHED -> realTimeCounter.incrementDaily(
+            case GARMENT_PUBLISHED -> metricRepository.upsertDailyIncrement(
                     MetricCode.PLATFORM_GARMENT_PUBLICATIONS, PLATFORM_SCOPE, metricDate, positiveAmount);
-            case PLAYLIST_CREATED -> realTimeCounter.incrementDaily(
+            case PLAYLIST_CREATED -> metricRepository.upsertDailyIncrement(
                     MetricCode.PLATFORM_PLAYLISTS_CREATED, PLATFORM_SCOPE, metricDate, positiveAmount);
             case SUBSCRIPTION_PAYMENT_PROCESSED -> {
                 if (event.paymentStatus() == PaymentStatus.APROBADO
                         && event.amount() != null
                         && event.amount().signum() > 0) {
-                    realTimeCounter.incrementDaily(
+                    metricRepository.upsertDailyIncrement(
                             MetricCode.PLATFORM_SUBSCRIPTION_REVENUE, PLATFORM_SCOPE, metricDate, event.amount());
                 }
             }
@@ -80,9 +71,9 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
             }
             case DONATION_COMPLETED -> {
                 Scope foundationScope = requireScope(event.scopeId(), ScopeType.FOUNDATION);
-                realTimeCounter.incrementDaily(
+                metricRepository.upsertDailyIncrement(
                         MetricCode.FOUNDATION_GARMENTS_RECEIVED, foundationScope, metricDate, positiveAmount);
-                realTimeCounter.incrementDaily(
+                metricRepository.upsertDailyIncrement(
                         MetricCode.PLATFORM_MONTHLY_DONATIONS, PLATFORM_SCOPE, metricDate, BigDecimal.ONE);
             }
         }

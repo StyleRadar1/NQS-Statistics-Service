@@ -17,8 +17,6 @@ services:
       - DB_NAME=styleradar_statistics
       - DB_USER=styleradar_user
       - DB_PASSWORD=styleradar_secret
-      - REDIS_HOST=redis-estadisticas
-      - REDIS_PORT=6379
       - RABBITMQ_HOST=rabbitmq-estadisticas
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=guest
@@ -26,8 +24,6 @@ services:
       - RABBITMQ_SSL_ENABLED=false
     depends_on:
       postgres-estadisticas:
-        condition: service_healthy
-      redis-estadisticas:
         condition: service_healthy
       rabbitmq-estadisticas:
         condition: service_healthy
@@ -46,20 +42,6 @@ services:
       - "5435:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U styleradar_user -d styleradar_statistics"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - styleradar-net
-
-  redis-estadisticas:
-    image: redis:7-alpine
-    container_name: sr-redis-estadisticas
-    restart: always
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5

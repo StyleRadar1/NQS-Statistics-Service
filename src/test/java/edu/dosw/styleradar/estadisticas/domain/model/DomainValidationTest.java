@@ -13,13 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class DomainValidationTest {
 
     @Test
-    void validatesDailyMetricIncrementAndDistributionRecords() {
+    void validatesDistributionRecords() {
         Scope storeScope = new Scope("store-1", ScopeType.STORE);
-
-        assertThrows(IllegalArgumentException.class, () -> new DailyMetricIncrement(
-                MetricCode.PLATFORM_USER_REGISTRATIONS, storeScope, LocalDate.of(2026, 11, 17), BigDecimal.ONE));
-        assertThrows(IllegalArgumentException.class, () -> new DailyMetricIncrement(
-                MetricCode.STORE_INVENTORY_BY_STATE, storeScope, LocalDate.of(2026, 11, 17), BigDecimal.ZERO));
 
         assertThrows(IllegalArgumentException.class, () -> new CategoryCode("   "));
         assertThrows(IllegalArgumentException.class, () -> new DistributionCount(CategoryCode.AVAILABLE, -1));
