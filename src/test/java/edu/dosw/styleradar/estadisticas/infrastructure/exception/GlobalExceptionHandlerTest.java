@@ -6,10 +6,14 @@ import edu.dosw.styleradar.estadisticas.domain.exception.UnsupportedMetricScopeE
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Map;
 
@@ -78,6 +82,28 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().get("message").toString().contains("id"));
+    }
+
+    @Test
+    @DisplayName("Debe manejar NoResourceFoundException retornando 404")
+    void testHandleNoResourceFound() {
+        NoResourceFoundException ex = new NoResourceFoundException(HttpMethod.GET, "/api/v1/statistics");
+        ResponseEntity<Map<String, Object>> response = handler.handleNoResourceFound(ex, request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(404, response.getBody().get("status"));
+        assertEquals("ROUTE_NOT_FOUND", response.getBody().get("code"));
+    }
+
+    @Test
+    @DisplayName("Debe manejar HttpRequestMethodNotSupportedException retornando 405")
+    void testHandleMethodNotSupported() {
+        HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("DELETE");
+        ResponseEntity<Map<String, Object>> response = handler.handleMethodNotSupported(ex, request);
+
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
+        assertEquals(405, response.getBody().get("status"));
+        assertEquals("METHOD_NOT_ALLOWED", response.getBody().get("code"));
     }
 
     @Test

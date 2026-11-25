@@ -31,10 +31,6 @@ spring:
       trust-store-type: ${RABBITMQ_TRUSTSTORE_TYPE:PKCS12}
       verify-hostname: ${RABBITMQ_SSL_VERIFY_HOSTNAME:true}
 
-security:
-  jwt:
-    secret: ${JWT_SECRET:}
-
   jpa:
     open-in-view: false
     hibernate:
@@ -46,6 +42,10 @@ security:
   flyway:
     enabled: true
     baseline-on-migrate: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:}
 
 springdoc:
   api-docs:

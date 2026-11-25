@@ -75,6 +75,8 @@ public class DomainEventMapper {
             paymentStatus = PaymentStatus.APROBADO;
         }
 
+        String subscriberType = eventData == null ? null : normalizeOptional(eventData.tipoSuscriptor());
+
         return new DomainAnalyticsEvent(
                 eventId,
                 eventType,
@@ -84,7 +86,8 @@ public class DomainEventMapper {
                 previousCategoryCode,
                 amount,
                 payload.delta() != null ? payload.delta() : 0L,
-                paymentStatus);
+                paymentStatus,
+                subscriberType);
     }
 
     private DomainEventType resolveEventType(String rawEventType, String routingKey) {

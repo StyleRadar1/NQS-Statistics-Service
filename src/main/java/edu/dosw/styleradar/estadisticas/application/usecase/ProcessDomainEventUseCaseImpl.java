@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Locale;
 import java.util.Objects;
 
 @Service
@@ -74,7 +75,7 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
                 }
             }
             case SUBSCRIPTION_PLAN_CHANGED -> {
-                MetricCode planMetric = resolvePlanMetric(event.categoryCode(), event.previousCategoryCode());
+                MetricCode planMetric = resolvePlanMetric(event);
                 applyCategoryTransition(planMetric, PLATFORM_SCOPE, event.previousCategoryCode(), event.categoryCode());
             }
             case DONATION_COMPLETED -> {
@@ -101,8 +102,18 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
         }
     }
 
-    private MetricCode resolvePlanMetric(CategoryCode newPlan, CategoryCode previousPlan) {
-        CategoryCode ref = newPlan != null ? newPlan : previousPlan;
+    private MetricCode resolvePlanMetric(DomainAnalyticsEvent event) {
+        String subscriberType = event.subscriberType();
+        if (subscriberType != null && !subscriberType.isBlank()) {
+            String normalized = subscriberType.trim().toUpperCase(Locale.ROOT);
+            if ("BUYER".equals(normalized) || "COMPRADOR".equals(normalized) || "USER".equals(normalized)) {
+                return MetricCode.PLATFORM_BUYERS_BY_PLAN;
+            }
+            if ("STORE".equals(normalized) || "ALMACEN".equals(normalized) || "TIENDA".equals(normalized)) {
+                return MetricCode.PLATFORM_STORES_BY_PLAN;
+            }
+        }
+        CategoryCode ref = event.categoryCode() != null ? event.categoryCode() : event.previousCategoryCode();
         if (CategoryCode.PLAN_STORE_MONTHLY.equals(ref) || CategoryCode.SUSPENDED.equals(ref)) {
             return MetricCode.PLATFORM_STORES_BY_PLAN;
         }
