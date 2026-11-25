@@ -9,9 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
 
@@ -23,15 +27,29 @@ public class DomainEventListener {
     private final DomainEventMapper domainEventMapper;
     private final ProcessDomainEventUseCase processDomainEventUseCase;
     private final ProcessedEventJpaRepository processedEventRepository;
+    private final TransactionOperations transactionOperations;
 
+    @Autowired
     public DomainEventListener(
             DomainEventMapper domainEventMapper,
             ProcessDomainEventUseCase processDomainEventUseCase,
-            ProcessedEventJpaRepository processedEventRepository
+            ProcessedEventJpaRepository processedEventRepository,
+            PlatformTransactionManager transactionManager
+    ) {
+        this(domainEventMapper, processDomainEventUseCase, processedEventRepository,
+                new TransactionTemplate(transactionManager));
+    }
+
+    DomainEventListener(
+            DomainEventMapper domainEventMapper,
+            ProcessDomainEventUseCase processDomainEventUseCase,
+            ProcessedEventJpaRepository processedEventRepository,
+            TransactionOperations transactionOperations
     ) {
         this.domainEventMapper = domainEventMapper;
         this.processDomainEventUseCase = processDomainEventUseCase;
         this.processedEventRepository = processedEventRepository;
+        this.transactionOperations = transactionOperations;
     }
 
     @RabbitListener(
@@ -55,15 +73,13 @@ public class DomainEventListener {
         }
 
         try {
-            processedEventRepository.saveAndFlush(
-                    new ProcessedEventEntity(event.eventId(), event.eventType().name(), Instant.now()));
+            transactionOperations.executeWithoutResult(status -> {
+                processedEventRepository.saveAndFlush(
+                        new ProcessedEventEntity(event.eventId(), event.eventType().name(), Instant.now()));
+                processDomainEventUseCase.process(event);
+            });
         } catch (DataIntegrityViolationException ex) {
             log.info("Evento de dominio duplicado concurrente descartado por idempotencia: eventoId={}", event.eventId());
-            return;
-        }
-
-        try {
-            processDomainEventUseCase.process(event);
         } catch (IllegalArgumentException ex) {
             throw new AmqpRejectAndDontRequeueException("Unprocessable domain analytics event: " + event.eventType(), ex);
         }

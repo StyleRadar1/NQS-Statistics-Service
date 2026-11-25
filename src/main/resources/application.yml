@@ -13,11 +13,6 @@ spring:
     password: ${DB_PASSWORD:styleradar_secret}
     driver-class-name: org.postgresql.Driver
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
   rabbitmq:
     host: ${RABBITMQ_HOST:styleradar-rabbitmq-qa.northcentralus.cloudapp.azure.com}
     port: ${RABBITMQ_PORT:5671}
