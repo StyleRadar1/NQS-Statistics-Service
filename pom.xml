@@ -181,7 +181,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
 				<configuration>
-					<argLine>@{argLine} -XX:+EnableDynamicAgentLoading -javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${byte-buddy.version}/byte-buddy-agent-${byte-buddy.version}.jar</argLine>
+					<argLine>@{argLine} -XX:+EnableDynamicAgentLoading "-javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${byte-buddy.version}/byte-buddy-agent-${byte-buddy.version}.jar"</argLine>
 				</configuration>
 			</plugin>
 			<plugin>

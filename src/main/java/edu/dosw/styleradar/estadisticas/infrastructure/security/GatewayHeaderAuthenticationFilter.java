@@ -43,14 +43,11 @@ public final class GatewayHeaderAuthenticationFilter extends OncePerRequestFilte
                 return;
             }
             try {
-                AuthenticatedActor actor = jwtTokenValidator.validateAndExtract(token);
-                String headerStoreId = trimToNull(request.getHeader("X-Store-Id"));
-                String headerFoundationId = trimToNull(request.getHeader("X-Foundation-Id"));
-                AuthenticatedActor resolvedActor = new AuthenticatedActor(
-                        actor.role(),
-                        headerStoreId != null ? headerStoreId : actor.storeId(),
-                        headerFoundationId != null ? headerFoundationId : actor.foundationId());
-                setAuthentication(resolvedActor);
+                AuthenticatedActor actor = jwtTokenValidator.validateAndExtract(
+                        token,
+                        request.getHeader("X-Store-Id"),
+                        request.getHeader("X-Foundation-Id"));
+                setAuthentication(actor);
                 filterChain.doFilter(request, response);
                 return;
             } catch (JwtTokenValidator.InvalidJwtException ex) {

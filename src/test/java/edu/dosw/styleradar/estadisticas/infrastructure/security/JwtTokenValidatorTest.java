@@ -100,6 +100,26 @@ class JwtTokenValidatorTest {
                 "roles", List.of("STORE_ADMIN"),
                 "nit", "900123456-1"));
         assertEquals("900123456-1", validator.validateAndExtract(nitStoreToken).storeId());
+
+        String storeAliasToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-88",
+                "roles", List.of("STORE"),
+                "almacenId", "store-alias-88"));
+        AuthenticatedActor storeAliasActor = validator.validateAndExtract(storeAliasToken);
+        assertEquals("STORE_ADMIN", storeAliasActor.role());
+        assertEquals("store-alias-88", storeAliasActor.storeId());
+
+        String tiendaAliasToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-89",
+                "roles", List.of("TIENDA"),
+                "almacenId", "store-tienda-89"));
+        assertEquals("STORE_ADMIN", validator.validateAndExtract(tiendaAliasToken).role());
+
+        String fundacionAliasToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-90",
+                "roles", List.of("FOUNDATION"),
+                "fundacionId", "fund-90"));
+        assertEquals("fund-90", validator.validateAndExtract(fundacionAliasToken).foundationId());
     }
 
     @Test
@@ -179,6 +199,33 @@ class JwtTokenValidatorTest {
         buyerReq.addHeader("Authorization", "Bearer " + buyerToken);
         filter.doFilter(buyerReq, new MockHttpServletResponse(), new MockFilterChain());
         assertThrows(UnauthorizedScopeException.class, () -> scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+    }
+
+    @Test
+    void jwtClaimCannotBeOverriddenByHeadersButFallsBackWhenClaimIsNull() throws Exception {
+        GatewayHeaderAuthenticationFilter filter = new GatewayHeaderAuthenticationFilter(validator);
+
+        String claimStoreToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-10",
+                "roles", List.of("STORE"),
+                "storeId", "store-jwt-10"));
+        MockHttpServletRequest idorAttemptReq = new MockHttpServletRequest();
+        idorAttemptReq.addHeader("Authorization", "Bearer " + claimStoreToken);
+        idorAttemptReq.addHeader("X-Store-Id", "victim-store-99");
+        filter.doFilter(idorAttemptReq, new MockHttpServletResponse(), new MockFilterChain());
+        assertEquals(new Scope("store-jwt-10", ScopeType.STORE),
+                scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+
+        SecurityContextHolder.clearContext();
+        String noStoreClaimToken = signToken(TEST_SECRET, Map.of(
+                "sub", "user-20",
+                "roles", List.of("TIENDA")));
+        MockHttpServletRequest gatewayFallbackReq = new MockHttpServletRequest();
+        gatewayFallbackReq.addHeader("Authorization", "Bearer " + noStoreClaimToken);
+        gatewayFallbackReq.addHeader("X-Store-Id", "store-gw-20");
+        filter.doFilter(gatewayFallbackReq, new MockHttpServletResponse(), new MockFilterChain());
+        assertEquals(new Scope("store-gw-20", ScopeType.STORE),
+                scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
     }
 
     private String signToken(String base64Secret, Map<String, Object> claims) throws Exception {

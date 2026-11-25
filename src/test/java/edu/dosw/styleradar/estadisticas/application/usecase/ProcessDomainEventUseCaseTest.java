@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -145,6 +146,14 @@ class ProcessDomainEventUseCaseTest {
                 null, CategoryCode.PLAN_STORE_MONTHLY, null, null, 0L, null));
         verify(metricRepository).adjustDistributionCount(
                 MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM, CategoryCode.PLAN_STORE_MONTHLY, 1L);
+
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-plan-buyer-suspended", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.SUSPENDED, CategoryCode.PLAN_RADAR, null, 0L, null, "BUYER"));
+        verify(metricRepository, times(2)).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR, -1L);
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.SUSPENDED, 1L);
     }
 
     @Test

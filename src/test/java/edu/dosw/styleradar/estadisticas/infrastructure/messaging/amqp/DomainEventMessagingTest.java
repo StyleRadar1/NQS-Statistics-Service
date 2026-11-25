@@ -157,7 +157,7 @@ class DomainEventMessagingTest {
                 {
                   "eventId": "plan-1",
                   "timestamp": "2026-11-24T15:00:05Z",
-                  "data": { "planAnterior": "PLAN_RADAR", "planActual": "RADAR_PLUS" }
+                  "data": { "tipoSuscriptor": "BUYER", "planAnterior": "PLAN_RADAR", "planActual": "RADAR_PLUS" }
                 }
                 """, DomainEventPayload.class);
         DomainAnalyticsEvent plan = mapper.toDomainEvent(
@@ -165,6 +165,7 @@ class DomainEventMessagingTest {
         assertEquals(DomainEventType.SUBSCRIPTION_PLAN_CHANGED, plan.eventType());
         assertEquals(CategoryCode.PLAN_RADAR, plan.previousCategoryCode());
         assertEquals(CategoryCode.PLAN_RADAR_PLUS, plan.categoryCode());
+        assertEquals("BUYER", plan.subscriberType());
 
         DomainEventPayload donationPayload = objectMapper.readValue("""
                 {
