@@ -60,10 +60,16 @@ public class DomainEventListener {
             DomainEventPayload payload,
             @Header(name = AmqpHeaders.RECEIVED_ROUTING_KEY, required = false) String routingKey
     ) {
+        if (routingKey != null && !routingKey.isBlank() && !domainEventMapper.isSupportedRoutingKey(routingKey)) {
+            log.info("Evento ignorado por routingKey fuera de los 7 contratos vigentes: routingKey={}", routingKey);
+            return;
+        }
+
         final DomainAnalyticsEvent event;
         try {
             event = domainEventMapper.toDomainEvent(payload, routingKey);
         } catch (IllegalArgumentException | NullPointerException ex) {
+            log.warn("Payload inválido en evento de dominio (routingKey={}): {}", routingKey, ex.getMessage());
             throw new AmqpRejectAndDontRequeueException("Invalid domain analytics event payload", ex);
         }
 
@@ -74,13 +80,20 @@ public class DomainEventListener {
 
         try {
             transactionOperations.executeWithoutResult(status -> {
-                processedEventRepository.saveAndFlush(
-                        new ProcessedEventEntity(event.eventId(), event.eventType().name(), Instant.now()));
+                try {
+                    processedEventRepository.saveAndFlush(
+                            new ProcessedEventEntity(event.eventId(), event.eventType().name(), Instant.now()));
+                } catch (DataIntegrityViolationException duplicateEx) {
+                    status.setRollbackOnly();
+                    log.info("Evento de dominio duplicado concurrente descartado por idempotencia: eventoId={}",
+                            event.eventId());
+                    return;
+                }
                 processDomainEventUseCase.process(event);
             });
-        } catch (DataIntegrityViolationException ex) {
-            log.info("Evento de dominio duplicado concurrente descartado por idempotencia: eventoId={}", event.eventId());
         } catch (IllegalArgumentException ex) {
+            log.warn("Evento de dominio no procesable (eventoId={}, tipo={}): {}",
+                    event.eventId(), event.eventType(), ex.getMessage());
             throw new AmqpRejectAndDontRequeueException("Unprocessable domain analytics event: " + event.eventType(), ex);
         }
     }

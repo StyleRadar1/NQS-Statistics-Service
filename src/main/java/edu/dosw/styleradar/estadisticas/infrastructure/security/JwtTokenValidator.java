@@ -90,7 +90,7 @@ public class JwtTokenValidator {
             throw new InvalidJwtException("JWT token does not contain a recognized role");
         }
 
-        String claimStoreId = firstNonBlank(claims, "storeId", "idTienda", "store_id", "almacenId", "nit");
+        String claimStoreId = firstNonBlank(claims, "storeId", "tiendaId", "idTienda", "store_id", "almacenId", "nit");
         String claimFoundationId = firstNonBlank(claims, "foundationId", "idFundacion", "foundation_id", "fundacionId");
 
         String storeId = claimStoreId != null ? claimStoreId : trimToNull(headerStoreId);
@@ -182,7 +182,7 @@ public class JwtTokenValidator {
         }
         return switch (trimmed.toUpperCase(Locale.ROOT)) {
             case "STORE_ADMIN", "ADMIN_ALMACEN", "STORE", "TIENDA" -> "STORE_ADMIN";
-            case "FOUNDATION_ADMIN", "FOUNDATION_REPRESENTATIVE", "REPRESENTANTE_FUNDACION", "FOUNDATION" -> "FOUNDATION_ADMIN";
+            case "FOUNDATION_ADMIN", "FOUNDATION_REPRESENTATIVE", "REPRESENTANTE_FUNDACION", "FOUNDATION", "FUNDACION" -> "FOUNDATION_ADMIN";
             case "PLATFORM_ADMIN", "STYLERADAR_ADMIN", "ADMIN_STYLERADAR", "ADMIN" -> "PLATFORM_ADMIN";
             case "COMPRADOR", "BUYER" -> "COMPRADOR";
             default -> null;

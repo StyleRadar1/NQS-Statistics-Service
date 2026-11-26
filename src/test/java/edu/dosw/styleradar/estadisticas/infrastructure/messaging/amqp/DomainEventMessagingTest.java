@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class DomainEventMessagingTest {
@@ -49,7 +51,7 @@ class DomainEventMessagingTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void mapsInventoryEnvelopeForCreationAndUpdate() throws Exception {
+    void mapsInventoryEnvelopeForCreationUpdateAndEstadoField() throws Exception {
         String updatedJson = """
                 {
                   "eventId": "9c2e8a74-1f3b-4c5d-8e9a-0b1c2d3e4f5a",
@@ -59,7 +61,8 @@ class DomainEventMessagingTest {
                     "tiendaId": "store-17",
                     "sedeId": "fc942335-ab30-350a-b6a5-577cf0ca2fb5",
                     "stockAnterior": 10,
-                    "stockDisponible": 3
+                    "stockDisponible": 3,
+                    "estado": "ACTUALIZADO"
                   }
                 }
                 """;
@@ -79,6 +82,7 @@ class DomainEventMessagingTest {
         assertEquals("store-17", updatedEvent.scopeId());
         assertEquals(CategoryCode.AVAILABLE, updatedEvent.previousCategoryCode());
         assertEquals(CategoryCode.LOW_STOCK, updatedEvent.categoryCode());
+        assertNull(updatedEvent.paymentStatus());
 
         DomainEventPayload initialPayload = objectMapper.readValue("""
                 {
@@ -104,7 +108,7 @@ class DomainEventMessagingTest {
                 {
                   "eventId": "usr-1",
                   "occurredAt": "2026-11-24T16:30:00Z",
-                  "data": { "rol": "BUYER" }
+                  "data": { "rol": "BUYER", "estado": "ACTIVO" }
                 }
                 """, DomainEventPayload.class);
         DomainAnalyticsEvent userBuyer = mapper.toDomainEvent(
@@ -124,11 +128,14 @@ class DomainEventMessagingTest {
         DomainEventPayload garmentPayload = objectMapper.readValue("""
                 {
                   "eventoId": "cat-1",
-                  "fechaEvento": "2026-11-24T15:00:00Z"
+                  "fechaEvento": "2026-11-24T15:00:00Z",
+                  "data": { "itemId": "garment-101", "tiendaId": "store-17", "precio": 89000 }
                 }
                 """, DomainEventPayload.class);
-        assertEquals(DomainEventType.GARMENT_PUBLISHED,
-                mapper.toDomainEvent(garmentPayload, DomainEventMapper.GARMENT_PUBLISHED_ROUTING_KEY).eventType());
+        DomainAnalyticsEvent garmentEvent = mapper.toDomainEvent(
+                garmentPayload, DomainEventMapper.GARMENT_PUBLISHED_ROUTING_KEY);
+        assertEquals(DomainEventType.GARMENT_PUBLISHED, garmentEvent.eventType());
+        assertNull(garmentEvent.amount());
 
         DomainEventPayload playlistPayload = objectMapper.readValue("""
                 {
@@ -142,8 +149,9 @@ class DomainEventMessagingTest {
         DomainEventPayload paymentPayload = objectMapper.readValue("""
                 {
                   "eventId": "pay-1",
+                  "eventType": "PagoConfirmadoEvent",
                   "timestamp": "2026-11-24T15:00:00Z",
-                  "data": { "estado": "APPROVED", "monto": 14900 }
+                  "data": { "estado": "APPROVED", "monto": 14900, "moneda": "COP" }
                 }
                 """, DomainEventPayload.class);
         DomainAnalyticsEvent payment = mapper.toDomainEvent(
@@ -155,8 +163,14 @@ class DomainEventMessagingTest {
         DomainEventPayload planPayload = objectMapper.readValue("""
                 {
                   "eventId": "plan-1",
+                  "eventType": "SuscripcionPlanActualizado",
                   "timestamp": "2026-11-24T15:00:05Z",
-                  "data": { "tipoSuscriptor": "BUYER", "planAnterior": "PLAN_RADAR", "planActual": "RADAR_PLUS" }
+                  "data": {
+                    "tipoSuscriptor": "USUARIO",
+                    "estado": "ACTIVA",
+                    "planAnterior": "PLAN_RADAR",
+                    "planActual": "RADAR_PLUS"
+                  }
                 }
                 """, DomainEventPayload.class);
         DomainAnalyticsEvent plan = mapper.toDomainEvent(
@@ -164,7 +178,7 @@ class DomainEventMessagingTest {
         assertEquals(DomainEventType.SUBSCRIPTION_PLAN_CHANGED, plan.eventType());
         assertEquals(CategoryCode.PLAN_RADAR, plan.previousCategoryCode());
         assertEquals(CategoryCode.PLAN_RADAR_PLUS, plan.categoryCode());
-        assertEquals("BUYER", plan.subscriberType());
+        assertEquals("USUARIO", plan.subscriberType());
 
         DomainEventPayload donationPayload = objectMapper.readValue("""
                 {
@@ -181,7 +195,80 @@ class DomainEventMessagingTest {
     }
 
     @Test
+    void mapsPagosSuscripcionesEdgeCasesAndTimestampFormats() throws Exception {
+        DomainEventPayload confirmedStatusPayment = objectMapper.readValue("""
+                {
+                  "eventId": "pay-confirmed",
+                  "timestamp": [2026, 11, 24, 15, 0, 5],
+                  "data": {
+                    "ordenId": 21,
+                    "suscripcionId": 15,
+                    "tipoSuscriptor": "USUARIO",
+                    "planId": 2,
+                    "estado": "CONFIRMED",
+                    "valor": 29900
+                  }
+                }
+                """, DomainEventPayload.class);
+        DomainAnalyticsEvent confirmedPayment = mapper.toDomainEvent(
+                confirmedStatusPayment, DomainEventMapper.SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY);
+        assertEquals(PaymentStatus.APROBADO, confirmedPayment.paymentStatus());
+        assertEquals(new BigDecimal("29900"), confirmedPayment.amount());
+        assertEquals(Instant.parse("2026-11-24T15:00:05Z"), confirmedPayment.occurredAt());
+
+        DomainEventPayload flatRejectedPayment = objectMapper.readValue("""
+                {
+                  "eventId": "pay-flat-rejected",
+                  "timestamp": 1763996400,
+                  "estado": "REJECTED",
+                  "monto": 14900
+                }
+                """, DomainEventPayload.class);
+        DomainAnalyticsEvent rejectedPayment = mapper.toDomainEvent(
+                flatRejectedPayment, DomainEventMapper.SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY);
+        assertEquals(PaymentStatus.RECHAZADO, rejectedPayment.paymentStatus());
+        assertEquals(Instant.ofEpochSecond(1763996400L), rejectedPayment.occurredAt());
+
+        DomainEventPayload suspendedStoreByState = objectMapper.readValue("""
+                {
+                  "eventId": "plan-store-susp",
+                  "timestamp": "2026-11-24 15:00:00",
+                  "data": {
+                    "tipoSuscriptor": "ALMACEN",
+                    "estado": "SUSPENDIDA",
+                    "planAnterior": "STORE",
+                    "planActual": null
+                  }
+                }
+                """, DomainEventPayload.class);
+        DomainAnalyticsEvent storeSuspension = mapper.toDomainEvent(
+                suspendedStoreByState, DomainEventMapper.SUBSCRIPTION_PLAN_UPDATED_ROUTING_KEY);
+        assertEquals(CategoryCode.PLAN_STORE_MONTHLY, storeSuspension.previousCategoryCode());
+        assertEquals(CategoryCode.SUSPENDED, storeSuspension.categoryCode());
+        assertEquals("ALMACEN", storeSuspension.subscriberType());
+
+        DomainEventPayload planByNumericId = objectMapper.readValue("""
+                {
+                  "eventId": "plan-id-activation",
+                  "timestamp": "2026-11-24",
+                  "data": {
+                    "tipoSuscriptor": "BUYER",
+                    "planAnteriorId": 1,
+                    "planId": 2
+                  }
+                }
+                """, DomainEventPayload.class);
+        DomainAnalyticsEvent numericPlan = mapper.toDomainEvent(
+                planByNumericId, DomainEventMapper.SUBSCRIPTION_PLAN_UPDATED_ROUTING_KEY);
+        assertEquals(CategoryCode.PLAN_RADAR, numericPlan.previousCategoryCode());
+        assertEquals(CategoryCode.PLAN_RADAR_PLUS, numericPlan.categoryCode());
+    }
+
+    @Test
     void rejectsInvalidPayloadsAndUnknownRoutingKeys() {
+        assertTrue(mapper.isSupportedRoutingKey(DomainEventMapper.SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY));
+        assertFalse(mapper.isSupportedRoutingKey("styleradar.pagos.suscripcion.suspendida"));
+
         assertThrows(NullPointerException.class, () -> mapper.toDomainEvent(null, DomainEventMapper.PLAYLIST_CREATED_ROUTING_KEY));
         assertThrows(IllegalArgumentException.class,
                 () -> mapper.toDomainEvent(payload(" ", "PLAYLIST_CREATED"), null));
@@ -198,14 +285,25 @@ class DomainEventMessagingTest {
                                 "store-1", null, null, null, null, -1, 4, null,
                                 null, null, null, null, null, null, null, null)),
                 DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY));
+        assertThrows(IllegalArgumentException.class, () -> mapper.toDomainEvent(
+                new DomainEventPayload("e3", "styleradar.pagos.suscripcion.plan.actualizado", "2026-11-24T23:00:00Z",
+                        null, null, null, null, null, null,
+                        new DomainEventPayload.DomainEventData(
+                                null, null, null, null, null, null, null, null,
+                                null, null, null, null, null, "BUYER", null, "PLAN_INEXISTENTE")),
+                DomainEventMapper.SUBSCRIPTION_PLAN_UPDATED_ROUTING_KEY));
     }
 
     @Test
-    void listenerDeduplicatesEventsAndRoutesInvalidEventsToDlq() throws Exception {
+    void listenerDeduplicatesIgnoresOutOfScopeRoutingKeysAndRoutesInvalidEventsToDlq() throws Exception {
         ProcessDomainEventUseCase useCase = mock(ProcessDomainEventUseCase.class);
         ProcessedEventJpaRepository processedRepo = mock(ProcessedEventJpaRepository.class);
         DomainEventListener listener = new DomainEventListener(
                 mapper, useCase, processedRepo, TransactionOperations.withoutTransaction());
+
+        listener.receive(payload("evt-legacy-susp", "styleradar.pagos.suscripcion.suspendida"),
+                "styleradar.pagos.suscripcion.suspendida");
+        verifyNoInteractions(processedRepo, useCase);
 
         DomainEventPayload validPayload = payload("evt-dom-1", "PLAYLIST_CREATED");
         when(processedRepo.existsById("evt-dom-1")).thenReturn(false, true);
