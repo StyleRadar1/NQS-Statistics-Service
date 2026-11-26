@@ -1,0 +1,309 @@
+<mxGraphModel dx="2858" dy="1638" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <mxCell id="title" parent="1" style="text;html=1;fontFamily=Poppins;fontSize=16;fontColor=#5600EF;align=left;verticalAlign=middle;" value="&lt;b&gt;STYLERADAR — DIAGRAMA DE CLASES DE DOMINIO: ms-estadisticas (NQS-Statistics-Service)&lt;/b&gt;" vertex="1">
+      <mxGeometry height="32" width="1200" x="30" y="10" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_scope" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFF2CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«value object · record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Scope&lt;/b&gt;" vertex="1">
+      <mxGeometry height="106" width="230" x="30" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_scope_b" parent="vo_scope" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- id: String&lt;br&gt;- type: ScopeType&lt;hr size=&quot;1&quot;&gt;+ id(): String&lt;br&gt;+ type(): ScopeType" vertex="1">
+      <mxGeometry height="70" width="230" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_period" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFF2CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«value object · record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Period&lt;/b&gt;" vertex="1">
+      <mxGeometry height="106" width="230" x="30" y="200" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_period_b" parent="vo_period" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- startDate: LocalDate&lt;br&gt;- endDate: LocalDate&lt;hr size=&quot;1&quot;&gt;+ startDate(): LocalDate&lt;br&gt;+ endDate(): LocalDate" vertex="1">
+      <mxGeometry height="70" width="230" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_cat" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFF2CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«value object · record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;CategoryCode&lt;/b&gt;" vertex="1">
+      <mxGeometry height="205" width="230" x="30" y="335" as="geometry" />
+    </mxCell>
+    <mxCell id="vo_cat_b" parent="vo_cat" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- value: String&lt;br&gt;+ AVAILABLE: CategoryCode&lt;br&gt;+ LOW_STOCK: CategoryCode&lt;br&gt;+ OUT_OF_STOCK: CategoryCode&lt;br&gt;+ PLAN_RADAR: CategoryCode&lt;br&gt;+ PLAN_RADAR_PLUS: CategoryCode&lt;br&gt;+ PLAN_STORE_MONTHLY: CategoryCode&lt;br&gt;+ SUSPENDED: CategoryCode&lt;hr size=&quot;1&quot;&gt;+ value(): String" vertex="1">
+      <mxGeometry height="169" width="230" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_ts" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;TimeSeries&lt;/b&gt;" vertex="1">
+      <mxGeometry height="146" width="260" x="320" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="m_ts_b" parent="m_ts" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- metricCode: MetricCode&lt;br&gt;- scope: Scope&lt;br&gt;- period: Period&lt;br&gt;- granularity: TimeGranularity&lt;br&gt;- points: List&amp;lt;Point&amp;gt;&lt;hr size=&quot;1&quot;&gt;+ points(): List&amp;lt;Point&amp;gt; (inmutable)" vertex="1">
+      <mxGeometry height="110" width="260" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_pt" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Point&lt;/b&gt;" vertex="1">
+      <mxGeometry height="106" width="260" x="320" y="245" as="geometry" />
+    </mxCell>
+    <mxCell id="m_pt_b" parent="m_pt" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- date: LocalDate&lt;br&gt;- value: BigDecimal&lt;hr size=&quot;1&quot;&gt;+ date(): LocalDate&lt;br&gt;+ value(): BigDecimal" vertex="1">
+      <mxGeometry height="70" width="260" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_tot" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;MetricTotal&lt;/b&gt;" vertex="1">
+      <mxGeometry height="130" width="260" x="320" y="385" as="geometry" />
+    </mxCell>
+    <mxCell id="m_tot_b" parent="m_tot" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- metricCode: MetricCode&lt;br&gt;- scope: Scope&lt;br&gt;- period: Period (nullable)&lt;br&gt;- total: BigDecimal (&amp;gt;= 0)&lt;hr size=&quot;1&quot;&gt;+ total(): BigDecimal" vertex="1">
+      <mxGeometry height="94" width="260" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dist" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Distribution&lt;/b&gt;" vertex="1">
+      <mxGeometry height="122" width="265" x="640" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dist_b" parent="m_dist" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- metricCode: MetricCode&lt;br&gt;- scope: Scope&lt;br&gt;- entries: List&amp;lt;DistributionEntry&amp;gt;&lt;hr size=&quot;1&quot;&gt;+ entries(): List&amp;lt;DistributionEntry&amp;gt;" vertex="1">
+      <mxGeometry height="86" width="265" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dentry" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;DistributionEntry&lt;/b&gt;" vertex="1">
+      <mxGeometry height="122" width="265" x="640" y="230" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dentry_b" parent="m_dentry" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- categoryCode: CategoryCode&lt;br&gt;- count: long (&amp;gt;= 0)&lt;br&gt;- percentage: BigDecimal (0..100)&lt;hr size=&quot;1&quot;&gt;+ percentage(): BigDecimal" vertex="1">
+      <mxGeometry height="86" width="265" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dcnt" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;DistributionCount&lt;/b&gt;" vertex="1">
+      <mxGeometry height="106" width="265" x="640" y="390" as="geometry" />
+    </mxCell>
+    <mxCell id="m_dcnt_b" parent="m_dcnt" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- categoryCode: CategoryCode&lt;br&gt;- count: long (&amp;gt;= 0)&lt;hr size=&quot;1&quot;&gt;+ count(): long" vertex="1">
+      <mxGeometry height="70" width="265" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="m_evt" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#EDE7FF;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«domain event · record»&lt;/font&gt;&lt;br&gt;&lt;b&gt;DomainAnalyticsEvent&lt;/b&gt;" vertex="1">
+      <mxGeometry height="226" width="275" x="965" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="m_evt_b" parent="m_evt" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="- eventId: String&lt;br&gt;- eventType: DomainEventType&lt;br&gt;- occurredAt: Instant&lt;br&gt;- scopeId: String&lt;br&gt;- categoryCode: CategoryCode&lt;br&gt;- previousCategoryCode: CategoryCode&lt;br&gt;- amount: BigDecimal (&amp;gt;= 0)&lt;br&gt;- delta: long&lt;br&gt;- paymentStatus: PaymentStatus&lt;br&gt;- subscriberType: String" vertex="1">
+      <mxGeometry height="190" width="275" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="en_mc" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#F8CECC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«enum»&lt;/font&gt;&lt;br&gt;&lt;b&gt;MetricCode&lt;/b&gt;" vertex="1">
+      <mxGeometry height="250" width="275" x="965" y="325" as="geometry" />
+    </mxCell>
+    <mxCell id="en_mc_b" parent="en_mc" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="FOUNDATION_GARMENTS_RECEIVED&lt;br&gt;PLATFORM_GARMENT_PUBLICATIONS&lt;br&gt;PLATFORM_PLAYLISTS_CREATED&lt;br&gt;PLATFORM_USER_REGISTRATIONS&lt;br&gt;PLATFORM_SUBSCRIPTION_REVENUE&lt;br&gt;STORE_INVENTORY_BY_STATE&lt;br&gt;PLATFORM_BUYERS_BY_PLAN&lt;br&gt;PLATFORM_STORES_BY_PLAN&lt;br&gt;PLATFORM_MONTHLY_DONATIONS&lt;hr size=&quot;1&quot;&gt;+ scopeType(): ScopeType&lt;br&gt;+ granularity(): TimeGranularity" vertex="1">
+      <mxGeometry height="214" width="275" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="en_st" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#F8CECC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«enum»&lt;/font&gt;&lt;br&gt;&lt;b&gt;ScopeType&lt;/b&gt;" vertex="1">
+      <mxGeometry height="96" width="240" x="1300" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="en_st_b" parent="en_st" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="STORE&lt;br&gt;FOUNDATION&lt;br&gt;PLATFORM" vertex="1">
+      <mxGeometry height="60" width="240" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="en_tg" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#F8CECC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«enum»&lt;/font&gt;&lt;br&gt;&lt;b&gt;TimeGranularity&lt;/b&gt;" vertex="1">
+      <mxGeometry height="82" width="240" x="1300" y="185" as="geometry" />
+    </mxCell>
+    <mxCell id="en_tg_b" parent="en_tg" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="DAY&lt;br&gt;MONTH" vertex="1">
+      <mxGeometry height="46" width="240" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="en_det" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#F8CECC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«enum»&lt;/font&gt;&lt;br&gt;&lt;b&gt;DomainEventType&lt;/b&gt;" vertex="1">
+      <mxGeometry height="162" width="240" x="1300" y="295" as="geometry" />
+    </mxCell>
+    <mxCell id="en_det_b" parent="en_det" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="USER_REGISTERED&lt;br&gt;INVENTORY_STATE_CHANGED&lt;br&gt;GARMENT_PUBLISHED&lt;br&gt;PLAYLIST_CREATED&lt;br&gt;SUBSCRIPTION_PAYMENT_PROCESSED&lt;br&gt;SUBSCRIPTION_PLAN_CHANGED&lt;br&gt;DONATION_COMPLETED" vertex="1">
+      <mxGeometry height="126" width="240" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="en_ps" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#F8CECC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«enum»&lt;/font&gt;&lt;br&gt;&lt;b&gt;PaymentStatus&lt;/b&gt;" vertex="1">
+      <mxGeometry height="110" width="240" x="1300" y="480" as="geometry" />
+    </mxCell>
+    <mxCell id="en_ps_b" parent="en_ps" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="APROBADO&lt;br&gt;RECHAZADO&lt;br&gt;PENDIENTE&lt;br&gt;REEMBOLSADO" vertex="1">
+      <mxGeometry height="74" width="240" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_rt" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#DAE8FC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«java.lang»&lt;/font&gt;&lt;br&gt;&lt;b&gt;RuntimeException&lt;/b&gt;" vertex="1">
+      <mxGeometry height="62" width="230" x="1750" y="65" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_rt_b" parent="ex_rt" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ getMessage(): String" vertex="1">
+      <mxGeometry height="26" width="230" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_unauth" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«exception»&lt;/font&gt;&lt;br&gt;&lt;b&gt;UnauthorizedScopeException&lt;/b&gt;" vertex="1">
+      <mxGeometry height="78" width="250" x="1600" y="190" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_unauth_b" parent="ex_unauth" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ UnauthorizedScopeException(msg: String)&lt;br&gt;&lt;i&gt;HTTP 403 · ACCESS_DENIED&lt;/i&gt;" vertex="1">
+      <mxGeometry height="42" width="250" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_unsup" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«exception»&lt;/font&gt;&lt;br&gt;&lt;b&gt;UnsupportedMetricScopeException&lt;/b&gt;" vertex="1">
+      <mxGeometry height="78" width="280" x="1880" y="190" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_unsup_b" parent="ex_unsup" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ UnsupportedMetricScopeException(msg: String)&lt;br&gt;&lt;i&gt;HTTP 400 · UNSUPPORTED_METRIC_SCOPE&lt;/i&gt;" vertex="1">
+      <mxGeometry height="42" width="280" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_inv" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«exception»&lt;/font&gt;&lt;br&gt;&lt;b&gt;InvalidTimeSeriesRequestException&lt;/b&gt;" vertex="1">
+      <mxGeometry height="78" width="280" x="1725" y="310" as="geometry" />
+    </mxCell>
+    <mxCell id="ex_inv_b" parent="ex_inv" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ InvalidTimeSeriesRequestException(msg: String)&lt;br&gt;&lt;i&gt;HTTP 400 · INVALID_PERIOD&lt;/i&gt;" vertex="1">
+      <mxGeometry height="42" width="280" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="p_sum" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFE6CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«interface · port.in»&lt;/font&gt;&lt;br&gt;&lt;b&gt;QueryMetricSummaryUseCase&lt;/b&gt;" vertex="1">
+      <mxGeometry height="74" width="330" y="640" as="geometry" />
+    </mxCell>
+    <mxCell id="p_sum_b" parent="p_sum" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ queryTotal(metricCode: MetricCode, scope: Scope): MetricTotal" vertex="1">
+      <mxGeometry height="38" width="330" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="p_ts" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFE6CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«interface · port.in»&lt;/font&gt;&lt;br&gt;&lt;b&gt;QueryTimeSeriesUseCase&lt;/b&gt;" vertex="1">
+      <mxGeometry height="74" width="440" x="340" y="640" as="geometry" />
+    </mxCell>
+    <mxCell id="p_ts_b" parent="p_ts" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ query(code: MetricCode, scope: Scope, period: Period, gran: TimeGranularity): TimeSeries" vertex="1">
+      <mxGeometry height="38" width="440" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="p_dist" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFE6CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«interface · port.in»&lt;/font&gt;&lt;br&gt;&lt;b&gt;QueryDistributionUseCase&lt;/b&gt;" vertex="1">
+      <mxGeometry height="74" width="320" x="920" y="640" as="geometry" />
+    </mxCell>
+    <mxCell id="p_dist_b" parent="p_dist" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ query(metricCode: MetricCode, scope: Scope): Distribution" vertex="1">
+      <mxGeometry height="38" width="320" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="p_proc" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFE6CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«interface · port.in»&lt;/font&gt;&lt;br&gt;&lt;b&gt;ProcessDomainEventUseCase&lt;/b&gt;" vertex="1">
+      <mxGeometry height="74" width="310" x="1250" y="640" as="geometry" />
+    </mxCell>
+    <mxCell id="p_proc_b" parent="p_proc" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ process(event: DomainAnalyticsEvent): void" vertex="1">
+      <mxGeometry height="38" width="310" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="p_repo" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=36;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFE6CC;strokeColor=#5600EF;" value="&lt;font style=&quot;font-size:9px;font-weight:normal&quot;&gt;«interface · port.out»&lt;/font&gt;&lt;br&gt;&lt;b&gt;MetricRepositoryPort&lt;/b&gt;" vertex="1">
+      <mxGeometry height="148" width="570" x="390" y="790" as="geometry" />
+    </mxCell>
+    <mxCell id="p_repo_b" parent="p_repo" style="text;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=none;" value="+ findDailyPoints(code: MetricCode, scope: Scope, period: Period): List&amp;lt;Point&amp;gt;&lt;br&gt;+ findDistributionCounts(code: MetricCode, scope: Scope): List&amp;lt;DistributionCount&amp;gt;&lt;br&gt;+ upsertDailyIncrement(code: MetricCode, scope: Scope, date: LocalDate, inc: BigDecimal): void&lt;br&gt;+ sumAllDailyPoints(code: MetricCode, scope: Scope): BigDecimal&lt;br&gt;+ adjustDistributionCount(code: MetricCode, scope: Scope, cat: CategoryCode, delta: long): void" vertex="1">
+      <mxGeometry height="112" width="570" y="36" as="geometry" />
+    </mxCell>
+    <mxCell id="note" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=16;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;spacingRight=10;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#F5F0E1;strokeColor=#B8A88A;" value="&lt;b&gt;Invariantes garantizadas en el Núcleo de Dominio (Java 21 puro):&lt;/b&gt;&lt;br&gt;• &lt;b&gt;Scope / CategoryCode / DomainAnalyticsEvent:&lt;/b&gt; rechazan identificadores vacíos o nulos y montos negativos.&lt;br&gt;• &lt;b&gt;Period:&lt;/b&gt; valida &lt;code&gt;endDate &amp;gt;= startDate&lt;/code&gt;; fechas de eventos se agrupan en zona &lt;code&gt;America/Bogota&lt;/code&gt;.&lt;br&gt;• &lt;b&gt;TimeSeries / Distribution:&lt;/b&gt; colecciones inmutables (&lt;code&gt;List.copyOf&lt;/code&gt;) y unicidad de &lt;code&gt;CategoryCode&lt;/code&gt;.&lt;br&gt;• &lt;b&gt;DistributionEntry / MetricTotal:&lt;/b&gt; conteos &amp;gt;= 0 y porcentajes estrictamente en rango &lt;code&gt;[0, 100]&lt;/code&gt;.&lt;br&gt;• &lt;b&gt;Cero dependencias externas:&lt;/b&gt; el paquete &lt;code&gt;domain&lt;/code&gt; no importa Spring, JPA ni RabbitMQ." vertex="1">
+      <mxGeometry height="150" width="590" x="1570" y="640" as="geometry" />
+    </mxCell>
+    <mxCell id="r_ts_sc" edge="1" parent="1" source="m_ts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="vo_scope">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_ts_pr" edge="1" parent="1" source="m_ts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="vo_period">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_ts_pt" edge="1" parent="1" source="m_ts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontFamily=Poppins;fontSize=9;strokeColor=#5600EF;startArrow=diamondThin;startFill=1;endArrow=open;" target="m_pt" value="1..*">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_tot_sc" edge="1" parent="1" source="m_tot" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="vo_scope">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="290" y="425" />
+          <mxPoint x="290" y="135" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_tot_pr" edge="1" parent="1" source="m_tot" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontFamily=Poppins;fontSize=9;strokeColor=#5600EF;endArrow=open;" target="vo_period" value="0..1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="280" y="455" />
+          <mxPoint x="280" y="255" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_dist_de" edge="1" parent="1" source="m_dist" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontFamily=Poppins;fontSize=9;strokeColor=#5600EF;startArrow=diamondThin;startFill=1;endArrow=open;" target="m_dentry" value="0..*">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_de_cat" edge="1" parent="1" source="m_dentry" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="vo_cat">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="610" y="290" />
+          <mxPoint x="610" y="555" />
+          <mxPoint x="145" y="555" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_dc_cat" edge="1" parent="1" source="m_dcnt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="vo_cat">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="610" y="445" />
+          <mxPoint x="610" y="555" />
+          <mxPoint x="145" y="555" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_evt_det" edge="1" parent="1" source="m_evt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="en_det">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1270" y="180" />
+          <mxPoint x="1270" y="375" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_evt_ps" edge="1" parent="1" source="m_evt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="en_ps">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1260" y="230" />
+          <mxPoint x="1260" y="535" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_mc_st" edge="1" parent="1" source="en_mc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="en_st">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1280" y="380" />
+          <mxPoint x="1280" y="115" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_mc_tg" edge="1" parent="1" source="en_mc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=open;" target="en_tg">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1280" y="420" />
+          <mxPoint x="1280" y="225" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_ts_mc" edge="1" parent="1" source="m_ts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="en_mc">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="610" y="140" />
+          <mxPoint x="610" y="540" />
+          <mxPoint x="940" y="540" />
+          <mxPoint x="940" y="450" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_dist_mc" edge="1" parent="1" source="m_dist" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="en_mc">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="940" y="125" />
+          <mxPoint x="940" y="420" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_ex1" edge="1" parent="1" source="ex_unauth" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=block;endFill=0;" target="ex_rt">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_ex2" edge="1" parent="1" source="ex_unsup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=block;endFill=0;" target="ex_rt">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="r_ex3" edge="1" parent="1" source="ex_inv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#5600EF;endArrow=block;endFill=0;" target="ex_rt">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1865" y="290" />
+          <mxPoint x="1865" y="155" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_ps_mt" edge="1" parent="1" source="p_sum" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="m_tot">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="195" y="600" />
+          <mxPoint x="450" y="600" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_pts_ts" edge="1" parent="1" source="p_ts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="m_ts">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="610" y="600" />
+          <mxPoint x="610" y="190" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_pd_d" edge="1" parent="1" source="p_dist" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="m_dist">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="930" y="600" />
+          <mxPoint x="930" y="150" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_pp_ev" edge="1" parent="1" source="p_proc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#5600EF;endArrow=open;" target="m_evt">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1365" y="610" />
+          <mxPoint x="1250" y="610" />
+          <mxPoint x="1250" y="250" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="r_repo_pt" edge="1" parent="1" source="p_repo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontFamily=Poppins;fontSize=9;dashed=1;strokeColor=#5600EF;endArrow=open;" target="m_dcnt" value="retorna Point / DistributionCount">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="675" y="750" />
+          <mxPoint x="845" y="750" />
+          <mxPoint x="845" y="560" />
+          <mxPoint x="772" y="560" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+  </root>
+</mxGraphModel>

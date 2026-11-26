@@ -1,0 +1,63 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="estadisticas-bd" name="EstadisticasBaseDeDatos">
+    <mxGraphModel dx="1600" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1820" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;STYLERADAR — DIAGRAMA ENTIDAD-RELACIÓN DE BASE DE DATOS: ms-estadisticas (NQS-Statistics-Service)&lt;/b&gt;" style="text;html=1;fontFamily=Poppins;fontSize=16;fontColor=#5600EF;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="10" width="1300" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- DB PACKAGE BOUNDARY -->
+        <mxCell id="db_box" value="styleradar_statistics · PostgreSQL 16" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=260;tabHeight=26;tabPosition=left;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=10;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=none;strokeColor=#94A3B8;dashed=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="20" y="50" width="1770" height="385" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE 1: metric_daily -->
+        <mxCell id="t_daily" value="metric_daily" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=12;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" vertex="1" parent="1">
+          <mxGeometry x="45" y="115" width="510" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="t_daily_b" value="&lt;table style=&quot;width:100%;border-collapse:collapse;font-family:Poppins;font-size:10px;color:#12063A;&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:58px;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;PK&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;&lt;b&gt;id&lt;/b&gt;: UUID NOT NULL&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;scope_type: VARCHAR(30) NOT NULL -- STORE | FOUNDATION | PLATFORM&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;scope_id: VARCHAR(100) NOT NULL -- Ext [tienda / fundacion / platform]&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;metric_code: VARCHAR(100) NOT NULL -- 6 métricas diarias/mensuales&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;metric_date: DATE NOT NULL -- Agrupado en America/Bogota&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;value: NUMERIC(18, 2) NOT NULL -- Acumulado por upsertDailyIncrement&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" style="text;html=1;align=left;verticalAlign=top;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="t_daily">
+          <mxGeometry y="32" width="510" height="198" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE 2: processed_event -->
+        <mxCell id="t_proc" value="processed_event" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=12;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" vertex="1" parent="1">
+          <mxGeometry x="720" y="160" width="370" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="t_proc_b" value="&lt;table style=&quot;width:100%;border-collapse:collapse;font-family:Poppins;font-size:10px;color:#12063A;&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:44px;font-weight:bold;padding:4px 6px;border-right:1px solid #5600EF;&quot;&gt;PK&lt;/td&gt;&lt;td style=&quot;padding:4px 8px;&quot;&gt;&lt;b&gt;evento_id&lt;/b&gt;: VARCHAR(120) NOT NULL&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding:4px 6px;border-right:1px solid #5600EF;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;td style=&quot;padding:4px 8px;&quot;&gt;event_type: VARCHAR(100) NOT NULL&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding:4px 6px;border-right:1px solid #5600EF;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;td style=&quot;padding:4px 8px;&quot;&gt;processed_at: TIMESTAMP NOT NULL&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" style="text;html=1;align=left;verticalAlign=top;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="t_proc">
+          <mxGeometry y="32" width="370" height="108" as="geometry" />
+        </mxCell>
+
+        <!-- TABLE 3: metric_distribution -->
+        <mxCell id="t_dist" value="metric_distribution" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fontFamily=Poppins;fontSize=12;fontColor=#12063A;fillColor=#E1D5E7;strokeColor=#5600EF;" vertex="1" parent="1">
+          <mxGeometry x="1255" y="115" width="510" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="t_dist_b" value="&lt;table style=&quot;width:100%;border-collapse:collapse;font-family:Poppins;font-size:10px;color:#12063A;&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:58px;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;PK&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;&lt;b&gt;id&lt;/b&gt;: UUID NOT NULL&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;scope_type: VARCHAR(30) NOT NULL -- STORE | PLATFORM&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;scope_id: VARCHAR(100) NOT NULL -- Ext [tienda / platform]&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK, IDX&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;metric_code: VARCHAR(100) NOT NULL -- 3 métricas de distribución&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-weight:bold;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;UK&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;category_code: VARCHAR(100) NOT NULL -- AVAILABLE | LOW_STOCK | PLAN_*&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding:3px 6px;border-right:1px solid #5600EF;&quot;&gt;&amp;nbsp;&lt;/td&gt;&lt;td style=&quot;padding:3px 8px;&quot;&gt;value: BIGINT NOT NULL CHECK (value &amp;gt;= 0)&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" style="text;html=1;align=left;verticalAlign=top;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="t_dist">
+          <mxGeometry y="32" width="510" height="198" as="geometry" />
+        </mxCell>
+
+        <!-- LOGICAL TRANSACTIONAL LINKS (NO PHYSICAL FK) -->
+        <mxCell id="rel1" value="idempotencia transaccional&lt;br&gt;(lógica, sin FK física)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;fontFamily=Poppins;fontSize=9;fontColor=#12063A;strokeColor=#5600EF;strokeWidth=1.5;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;" edge="1" parent="1" source="t_proc" target="t_daily">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel2" value="idempotencia transaccional&lt;br&gt;(lógica, sin FK física)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;fontFamily=Poppins;fontSize=9;fontColor=#12063A;strokeColor=#5600EF;strokeWidth=1.5;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;" edge="1" parent="1" source="t_proc" target="t_dist">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- BOTTOM NOTES (3 beige note boxes matching PT8080 style) -->
+        <mxCell id="n1" value="&lt;b&gt;Índices y Restricciones Flyway (V2, V5, V7, V8):&lt;/b&gt;&lt;br&gt;• &lt;code&gt;uq_metric_daily_scope_metric_date&lt;/code&gt; UNIQUE (scope_type, scope_id, metric_code, metric_date)&lt;br&gt;• &lt;code&gt;idx_metric_daily_lookup&lt;/code&gt; ON metric_daily(scope_type, scope_id, metric_code, metric_date)&lt;br&gt;• &lt;code&gt;uq_metric_distribution_scope_metric_category&lt;/code&gt; UNIQUE (scope_type, scope_id, metric_code, category_code)&lt;br&gt;• &lt;code&gt;idx_metric_distribution_scope_metric&lt;/code&gt; ON metric_distribution(scope_type, scope_id, metric_code)&lt;br&gt;• &lt;code&gt;CHECK (value &amp;gt;= 0)&lt;/code&gt; en &lt;code&gt;metric_distribution.value&lt;/code&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=14;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;spacingRight=10;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#F5F0E1;strokeColor=#B8A88A;" vertex="1" parent="1">
+          <mxGeometry x="20" y="460" width="575" height="175" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n2" value="&lt;b&gt;Aislamiento Database-per-Service y Zero-PII:&lt;/b&gt;&lt;br&gt;• &lt;b&gt;styleradar_statistics&lt;/b&gt; almacena exclusivamente conteos diarios, distribuciones y registro de eventos procesados (&lt;code&gt;ddl-auto: validate&lt;/code&gt;).&lt;br&gt;• &lt;code&gt;scope_id&lt;/code&gt; referencia de forma lógica identificadores externos (&lt;code&gt;tiendaId&lt;/code&gt;, &lt;code&gt;fundacionId&lt;/code&gt; o &lt;code&gt;platform&lt;/code&gt;) sin acoplamiento físico entre bases de datos.&lt;br&gt;• No se persiste ningún dato personal (nombres, correos, documentos ni teléfonos)." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=14;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;spacingRight=10;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#F5F0E1;strokeColor=#B8A88A;" vertex="1" parent="1">
+          <mxGeometry x="617" y="460" width="575" height="175" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n3" value="&lt;b&gt;Evolución y Limpieza del Esquema (Flyway V1–V9):&lt;/b&gt;&lt;br&gt;• &lt;code&gt;V9__cleanup_obsolete_tables_and_metrics.sql&lt;/code&gt; eliminó las tablas &lt;code&gt;metric_goal&lt;/code&gt; (V3) y &lt;code&gt;metric_item_daily&lt;/code&gt; (V4/V6) y depuró los códigos fuera de los 9 indicadores core.&lt;br&gt;• Las tablas iniciales de &lt;code&gt;V1__init_schema.sql&lt;/code&gt; (&lt;code&gt;tableros&lt;/code&gt;, &lt;code&gt;graficas&lt;/code&gt;, &lt;code&gt;series&lt;/code&gt;, &lt;code&gt;puntos&lt;/code&gt;, &lt;code&gt;indicadores&lt;/code&gt;) se conservan solo en el historial SQL sin entidades JPA ni controladores activos." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=14;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;spacingRight=10;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#F5F0E1;strokeColor=#B8A88A;" vertex="1" parent="1">
+          <mxGeometry x="1215" y="460" width="575" height="175" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
