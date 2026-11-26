@@ -1,0 +1,169 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="estadisticas-secuencia" name="FlowsEstadisticas">
+    <mxGraphModel dx="1600" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1240" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE & SUBTITLE -->
+        <mxCell id="title" value="&lt;b&gt;STYLERADAR — DIAGRAMA DE SECUENCIA DE FLUJOS CRÍTICOS: ms-estadisticas (NQS)&lt;/b&gt;" style="text;html=1;fontFamily=Poppins;fontSize=16;fontColor=#5600EF;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="1250" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Flujo 1: Ingesta AMQP + Idempotencia (DLQ)  |  Flujo 2: Consulta Autenticada REST (200 OK)  |  Flujo 3: Seguridad y Excepciones RFC 7807 (401 / 403 / 400)" style="text;html=1;fontFamily=Poppins;fontSize=10;fontColor=#475569;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="30" y="36" width="1400" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- TOP PARTICIPANTS -->
+        <mxCell id="p1_t" value="Cliente / Productor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontFamily=Poppins;fontSize=10;fontStyle=1;fontColor=#12063A;strokeColor=#5600EF;fillColor=#EDE7FF;" vertex="1" parent="1">
+          <mxGeometry x="65" y="70" width="30" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«broker»&lt;/font&gt;&lt;br&gt;&lt;b&gt;RabbitMQ &amp;amp; DLQ&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;styleradar.exchange&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#EDE7FF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="200" y="75" width="180" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«component»&lt;/font&gt;&lt;br&gt;&lt;b&gt;DomainEventListener&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;+ DomainEventMapper&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="425" y="75" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«security»&lt;/font&gt;&lt;br&gt;&lt;b&gt;SecurityFilter &amp;amp; Scope&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;JWT · CorrelationId · ScopeResolver&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="675" y="75" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«component»&lt;/font&gt;&lt;br&gt;&lt;b&gt;StatisticsRestControllers&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;Summary · TimeSeries · Distribution&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="925" y="75" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«component»&lt;/font&gt;&lt;br&gt;&lt;b&gt;UseCases &amp;amp; GapFiller&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;ProcessEvent · Query* · DtoMapper&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1175" y="75" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_t" value="&lt;font style=&quot;font-size:9px&quot;&gt;«component»&lt;/font&gt;&lt;br&gt;&lt;b&gt;GlobalExceptionHandler&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;@RestControllerAdvice · RFC 7807&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1425" y="75" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_t" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;styleradar_statistics&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#EDE7FF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1675" y="70" width="200" height="62" as="geometry" />
+        </mxCell>
+
+        <!-- LIFELINES (y=135 to y=1035) -->
+        <mxCell id="ll1" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="80" y="142" as="sourcePoint" /><mxPoint x="80" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll2" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="290" y="131" as="sourcePoint" /><mxPoint x="290" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll3" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="530" y="131" as="sourcePoint" /><mxPoint x="530" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll4" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="780" y="131" as="sourcePoint" /><mxPoint x="780" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll5" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="131" as="sourcePoint" /><mxPoint x="1030" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll6" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="131" as="sourcePoint" /><mxPoint x="1280" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll7" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1525" y="131" as="sourcePoint" /><mxPoint x="1525" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ll8" style="endArrow=none;dashed=1;html=1;strokeColor=#94A3B8;strokeWidth=1.2;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1775" y="132" as="sourcePoint" /><mxPoint x="1775" y="1035" as="targetPoint" /></mxGeometry></mxCell>
+
+        <!-- SCENARIO 1 FRAME -->
+        <mxCell id="sc1" value="&lt;b&gt;Escenario 1: Ingesta Transaccional e Idempotente de Eventos AMQP (styleradar.exchange → PostgreSQL 16 / DLQ)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#94A3B8;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontFamily=Poppins;fontSize=10;fontColor=#12063A;" vertex="1" parent="1">
+          <mxGeometry x="25" y="155" width="1870" height="305" as="geometry" />
+        </mxCell>
+
+        <!-- Scenario 1 messages -->
+        <mxCell id="m1" value="&lt;b&gt;1.&lt;/b&gt; Publica evento JSON (7 routing keys exactas)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="195" as="sourcePoint" /><mxPoint x="290" y="195" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="&lt;b&gt;2.&lt;/b&gt; Entrega desde styleradar.estadisticas.eventos-dominio.q" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="290" y="228" as="sourcePoint" /><mxPoint x="530" y="228" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="&lt;b&gt;3.&lt;/b&gt; DomainEventMapper.toDomainEvent(payload, routingKey) [America/Bogota]" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="530" y="258" as="sourcePoint" /><mxPoint x="530" y="276" as="targetPoint" /><Array as="points"><mxPoint x="595" y="258" /><mxPoint x="595" y="276" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="&lt;b&gt;4.&lt;/b&gt; processedEventRepository.existsById(eventId) — verificación de idempotencia" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="530" y="305" as="sourcePoint" /><mxPoint x="1775" y="305" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="&lt;b&gt;5.&lt;/b&gt; false (evento nuevo) → inicia TransactionTemplate + INSERT processed_event (saveAndFlush)" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1775" y="335" as="sourcePoint" /><mxPoint x="530" y="335" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="&lt;b&gt;6.&lt;/b&gt; ProcessDomainEventUseCaseImpl.process(event)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="530" y="368" as="sourcePoint" /><mxPoint x="1280" y="368" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m7" value="&lt;b&gt;7.&lt;/b&gt; MetricPersistenceAdapter: upsertDailyIncrement / adjustDistributionCount (COMMIT ACID)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="400" as="sourcePoint" /><mxPoint x="1775" y="400" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m8" value="&lt;b&gt;8. [alt error / payload inválido]&lt;/b&gt; AmqpRejectAndDontRequeueException → styleradar.estadisticas.dlq" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#B85450;fontFamily=Poppins;fontSize=9;fontColor=#991B1B;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="530" y="438" as="sourcePoint" /><mxPoint x="290" y="438" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <!-- SCENARIO 2 FRAME -->
+        <mxCell id="sc2" value="&lt;b&gt;Escenario 2: Consulta Autenticada de Indicadores REST (200 OK · /summary/totals, /time-series, /distributions)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#94A3B8;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontFamily=Poppins;fontSize=10;fontColor=#12063A;" vertex="1" parent="1">
+          <mxGeometry x="25" y="478" width="1870" height="292" as="geometry" />
+        </mxCell>
+
+        <!-- Scenario 2 messages -->
+        <mxCell id="m9" value="&lt;b&gt;9.&lt;/b&gt; GET /api/v1/statistics/time-series/PLATFORM_USER_REGISTRATIONS + Authorization: Bearer &amp;lt;JWT&amp;gt;" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="518" as="sourcePoint" /><mxPoint x="780" y="518" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m10" value="&lt;b&gt;10.&lt;/b&gt; CorrelationIdFilter (MDC) + JwtTokenValidator (HS256, exp, sub, role)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="780" y="544" as="sourcePoint" /><mxPoint x="780" y="562" as="targetPoint" /><Array as="points"><mxPoint x="845" y="544" /><mxPoint x="845" y="562" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="m11" value="&lt;b&gt;11.&lt;/b&gt; SecurityContext autenticado → TimeSeriesRestController.query(...)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="780" y="588" as="sourcePoint" /><mxPoint x="1030" y="588" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m12" value="&lt;b&gt;12.&lt;/b&gt; AuthenticatedScopeResolver.resolve(metricCode) → Scope(PLATFORM)" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="618" as="sourcePoint" /><mxPoint x="780" y="618" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m13" value="&lt;b&gt;13.&lt;/b&gt; QueryTimeSeriesUseCaseImpl.query(metricCode, scope, period, DAY)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="648" as="sourcePoint" /><mxPoint x="1280" y="648" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m14" value="&lt;b&gt;14.&lt;/b&gt; MetricPersistenceAdapter.findDailyPoints(...) → SELECT metric_daily" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="678" as="sourcePoint" /><mxPoint x="1775" y="678" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m15" value="&lt;b&gt;15.&lt;/b&gt; List&amp;lt;Point&amp;gt; → TimeSeriesGapFiller.fill(...) (relleno de ceros) → DtoMapper.toDto()" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1775" y="710" as="sourcePoint" /><mxPoint x="1030" y="710" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m16" value="&lt;b&gt;16.&lt;/b&gt; HTTP 200 OK — TimeSeriesResponseDto (JSON agregado sin PII + cabecera X-Correlation-Id)" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#16A34A;fontFamily=Poppins;fontSize=9;fontColor=#14532D;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="746" as="sourcePoint" /><mxPoint x="80" y="746" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <!-- SCENARIO 3 FRAME -->
+        <mxCell id="sc3" value="&lt;b&gt;Escenario 3: Seguridad y Manejo Centralizado de Excepciones con GlobalExceptionHandler (401 / 403 / 400 · RFC 7807)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#94A3B8;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontFamily=Poppins;fontSize=10;fontColor=#12063A;" vertex="1" parent="1">
+          <mxGeometry x="25" y="788" width="1870" height="228" as="geometry" />
+        </mxCell>
+
+        <!-- Scenario 3 messages -->
+        <mxCell id="m17" value="&lt;b&gt;17. [Sin JWT o token expirado]&lt;/b&gt; GET /api/v1/statistics/... → SecurityConfig / Filter rechaza con HTTP 401 Unauthorized" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#B85450;fontFamily=Poppins;fontSize=9;fontColor=#991B1B;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="780" y="832" as="sourcePoint" /><mxPoint x="80" y="832" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m18" value="&lt;b&gt;18.&lt;/b&gt; GET /api/v1/statistics/summary/totals/PLATFORM_GARMENT_PUBLICATIONS (rol BUYER o STORE_ADMIN)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="868" as="sourcePoint" /><mxPoint x="1030" y="868" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m19" value="&lt;b&gt;19.&lt;/b&gt; AuthenticatedScopeResolver.resolve(metricCode) → rol incompatible con ScopeType.PLATFORM" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#5600EF;fontFamily=Poppins;fontSize=9;fontColor=#12063A;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="902" as="sourcePoint" /><mxPoint x="780" y="902" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m20" value="&lt;b&gt;20.&lt;/b&gt; Lanza UnauthorizedScopeException (o InvalidTimeSeriesRequestException en fechas inválidas) → interceptada por @RestControllerAdvice" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#B85450;fontFamily=Poppins;fontSize=9;fontColor=#991B1B;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="780" y="940" as="sourcePoint" /><mxPoint x="1525" y="940" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m21" value="&lt;b&gt;21.&lt;/b&gt; HTTP 403 Forbidden (ACCESS_DENIED) / 400 Bad Request (INVALID_PERIOD) — ProblemDetail RFC 7807 (type, title, status, detail, code, timestamp)" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;strokeColor=#B85450;fontFamily=Poppins;fontSize=9;fontColor=#991B1B;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1525" y="986" as="sourcePoint" /><mxPoint x="80" y="986" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <!-- BOTTOM PARTICIPANTS -->
+        <mxCell id="p1_b" value="Cliente / Productor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontFamily=Poppins;fontSize=10;fontStyle=1;fontColor=#12063A;strokeColor=#5600EF;fillColor=#EDE7FF;" vertex="1" parent="1">
+          <mxGeometry x="65" y="1038" width="30" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_b" value="&lt;b&gt;RabbitMQ &amp;amp; DLQ&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#EDE7FF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1042" width="180" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_b" value="&lt;b&gt;DomainEventListener&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="425" y="1042" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_b" value="&lt;b&gt;SecurityFilter &amp;amp; Scope&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="675" y="1042" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_b" value="&lt;b&gt;StatisticsRestControllers&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="925" y="1042" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_b" value="&lt;b&gt;UseCases &amp;amp; GapFiller&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1175" y="1042" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_b" value="&lt;b&gt;GlobalExceptionHandler&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#FFFFFF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1425" y="1042" width="200" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_b" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fontFamily=Poppins;fontSize=11;fontColor=#12063A;fillColor=#EDE7FF;strokeColor=#5600EF;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1675" y="1035" width="200" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- FOOTER NOTE -->
+        <mxCell id="footer" value="&lt;b&gt;Alineación Estricta con el Código Fuente de NQS-Statistics-Service (Puerto 8420 · /api/v1):&lt;/b&gt;&lt;br&gt;• &lt;b&gt;Endpoints vigentes:&lt;/b&gt; &lt;code&gt;GET /statistics/summary/totals/{metricCode}&lt;/code&gt;, &lt;code&gt;GET /statistics/time-series/{metricCode}&lt;/code&gt;, &lt;code&gt;GET /statistics/distributions/{metricCode}&lt;/code&gt;, &lt;code&gt;GET /health&lt;/code&gt; y &lt;code&gt;GET /actuator/health&lt;/code&gt;.&lt;br&gt;• &lt;b&gt;Excepciones RFC 7807:&lt;/b&gt; &lt;code&gt;UnauthorizedScopeException (403 ACCESS_DENIED)&lt;/code&gt;, &lt;code&gt;UnsupportedMetricScopeException (400 UNSUPPORTED_METRIC_SCOPE)&lt;/code&gt;, &lt;code&gt;InvalidTimeSeriesRequestException (400 INVALID_PERIOD)&lt;/code&gt; y &lt;code&gt;NoResourceFoundException (404 ROUTE_NOT_FOUND)&lt;/code&gt;.&lt;br&gt;• &lt;b&gt;Consumo AMQP e idempotencia:&lt;/b&gt; 100% transaccional en PostgreSQL 16 (sin Redis), con 7 routing keys exactas en &lt;code&gt;styleradar.exchange&lt;/code&gt; y DLQ &lt;code&gt;styleradar.estadisticas.dlq&lt;/code&gt;." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=14;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;spacingRight=12;fontFamily=Poppins;fontSize=10;fontColor=#12063A;fillColor=#F5F0E1;strokeColor=#B8A88A;" vertex="1" parent="1">
+          <mxGeometry x="25" y="1120" width="1870" height="96" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

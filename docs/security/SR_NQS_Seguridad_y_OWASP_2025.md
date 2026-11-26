@@ -1,0 +1,43 @@
+# Análisis de Seguridad, Privacidad y Cumplimiento OWASP Top 10:2025 — `NQS-Statistics-Service` (`ms-estadisticas`)
+
+> **Microservicio:** `NQS-Statistics-Service` (`ms-estadisticas`) · Puerto `8420` · Context Path `/api/v1`  
+> **Squad:** `NQS (No Queremos Scrum)` · Asignatura DOSW 2026  
+> **Alcance:** Arquitectura Hexagonal, Java 21, Spring Boot 3.2.9, PostgreSQL 16, RabbitMQ 3.12 (AMQPS TLS en QA/PROD).
+
+---
+
+## 1. Arquitectura de Seguridad y Privacidad
+
+El microservicio `ms-estadisticas` expone exclusivamente indicadores agregados (totales, series temporales y distribuciones porcentuales) alimentados de forma asíncrona por eventos de dominio en RabbitMQ. Por diseño:
+
+1. **Cero Datos Personales (Zero-PII):** No almacena nombres, correos, documentos, teléfonos ni credenciales de usuarios finales. Los alcances (`Scope`) se restringen a identificadores técnicos de tienda (`STORE`), fundación (`FOUNDATION`) o plataforma (`platform`).
+2. **Autenticación Sin Estado (Stateless):** `SecurityConfig` configura `SessionCreationPolicy.STATELESS`, desactiva CSRF para API REST stateless y exige autenticación en `/statistics` y `/statistics/**`, respondiendo `401 Unauthorized` ante credenciales ausentes o inválidas.
+3. **Doble Mecanismo de Identidad (`GatewayHeaderAuthenticationFilter`):**
+   - **Token Bearer JWT (`HS256`):** Validado criptográficamente por `JwtTokenValidator` usando la clave compartida `JWT_SECRET` (Base64), verificando algoritmo (`alg == HS256`), firma con comparación en tiempo constante (`MessageDigest.isEqual`), `exp`, `nbf`, `sub` y roles normalizados.
+   - **Cabeceras de Contexto del API Gateway:** `X-User-Role`, `X-Store-Id` y `X-Foundation-Id`, utilizadas como respaldo cuando no viaja `Authorization: Bearer ...` o para complementar el alcance cuando el token no incluye el claim de tienda/fundación.
+4. **Aislamiento Autoritativo de Alcance (`AuthenticatedScopeResolver`):** Impide acceso cruzado entre tiendas, fundaciones o métricas globales de plataforma, rechazando peticiones fuera de alcance con `UnauthorizedScopeException` (`403 Forbidden`, código `ACCESS_DENIED`).
+
+---
+
+## 2. Matriz de Cumplimiento OWASP Top 10:2025
+
+| Categoría OWASP Top 10:2025 | Riesgo Aplicable a `ms-estadisticas` | Controles Implementados en el Código | Evidencia / Clase Responsable |
+| :--- | :--- | :--- | :--- |
+| **A01 · Broken Access Control** | Acceso indebido a métricas de otra tienda, otra fundación o de plataforma desde roles no autorizados (ej. `BUYER`/`COMPRADOR`). | `SecurityConfig` protege `/statistics/**`. `AuthenticatedScopeResolver` cruza el rol autenticado con `MetricCode.scopeType()` (`STORE`, `FOUNDATION`, `PLATFORM`) e impone el `storeId`/`foundationId` del actor autenticado (ignora cualquier manipulación de rutas). `BUYER`/`COMPRADOR` recibe `403 ACCESS_DENIED`. | `SecurityConfig`, `AuthenticatedScopeResolver`, `SecurityAndRoutingHttpTest`, `AuthenticatedScopeResolverTest` |
+| **A02 · Security Misconfiguration** | Exposición de trazas de stack, puertos innecesarios o configuración laxa de perfiles/endpoints. | `application.yml` expone en Actuator únicamente `health` e `info`, deshabilita `open-in-view`, aplica `ddl-auto: validate` con Flyway y `GlobalExceptionHandler` normaliza errores. En `application.yml`, RabbitMQ inicia con `ssl.enabled: true` y `verify-hostname: true` por defecto. | `application.yml`, `SecurityConfig`, `GlobalExceptionHandler`, `Dockerfile` |
+| **A03 · Software Supply Chain Failures** | Dependencias vulnerables o imágenes base pesadas/no reproducibles. | `Dockerfile` multi-stage (`maven:3.9-eclipse-temurin-21` → `eclipse-temurin:21-jre-alpine`) con versiones fijadas en `pom.xml` (Spring Boot `3.2.9`, Flyway `10.10.0`, MapStruct `1.5.5.Final`, Lombok `1.18.38`) y verificación en CI (`ci-cd.yml`). | `pom.xml`, `Dockerfile`, `.github/workflows/ci-cd.yml` |
+| **A04 · Cryptographic Failures** | Validación débil de tokens JWT o tráfico en claro hacia el broker de mensajería en la nube. | `JwtTokenValidator` rechaza algoritmos distintos a `HS256` (previene `alg=none` y confusión de algoritmos), verifica firma `HmacSHA256` con `MessageDigest.isEqual` y lee el secreto desde `JWT_SECRET`. En QA/PROD, RabbitMQ opera sobre TLS (`5671`) con TrustStore PKCS12 (`rabbitmq-truststore.jks`) generado en build desde `RABBITMQ_CA_PEM_BASE64`. | `JwtTokenValidator`, `Dockerfile`, `application.yml`, `JwtTokenValidatorTest` |
+| **A05 · Injection** | Inyección SQL en consultas de series/distribuciones o deserialización insegura de mensajes AMQP. | Persistencia mediante Spring Data JPA y consultas parametrizadas nativas (`@Param`), sin concatenación dinámica de SQL. En AMQP, `Jackson2JsonMessageConverter` usa `TypePrecedence.INFERRED` hacia el record tipado `DomainEventPayload` (`@JsonIgnoreProperties(ignoreUnknown = true)`), evitando deserialización polimórfica arbitraria. | `MetricDailyJpaRepository`, `MetricDistributionJpaRepository`, `RabbitMqConfig`, `DomainEventPayload` |
+| **A06 · Insecure Design** | Duplicación de conteos por reentrega de mensajes AMQP o envenenamiento de cola por payloads malformados. | Idempotencia transaccional estricta mediante `processed_event` (`evento_id` PK) ejecutada dentro de `TransactionTemplate` junto con la actualización métrica en PostgreSQL. Mensajes inválidos van directo a `styleradar.estadisticas.dlq` sin bucle infinito (`AmqpRejectAndDontRequeueException` + `SimpleRetryPolicy` con excepciones no reintentables). | `DomainEventListener`, `RabbitMqConfig`, `ProcessedEventEntity`, `DomainEventMessagingTest` |
+| **A07 · Authentication Failures** | Aceptación de tokens expirados, sin sujeto (`sub`), malformados o con cabeceras falsificadas sin validación. | `JwtTokenValidator` valida `exp`, `nbf`, presencia obligatoria de `sub` y rol reconocido; ante falla retorna `401 Unauthorized` limpio en `GatewayHeaderAuthenticationFilter`. Además, rechaza con `401` cuando `Authorization: Bearer` está presente pero `JWT_SECRET` no fue configurado. | `JwtTokenValidator`, `GatewayHeaderAuthenticationFilter`, `JwtTokenValidatorTest` |
+| **A08 · Software or Data Integrity Failures** | Cambios de esquema no controlados o corrupción de integridad en métricas/categorías. | Migraciones SQL versionadas e inmutables con Flyway (`V1`–`V9`), restricciones `UNIQUE` y `CHECK (value >= 0)` en PostgreSQL (`metric_daily`, `metric_distribution`, `processed_event`), más validación estricta en constructores de records de dominio (`Scope`, `Period`, `DomainAnalyticsEvent`, `MetricTotal`, `Distribution`). | `src/main/resources/db/migration/V1..V9`, `MetricDailyEntity`, `MetricDistributionEntity`, `DomainValidationTest` |
+| **A09 · Logging & Monitoring Failures** | Pérdida de trazabilidad distribuida entre API Gateway y microservicio o inyección de saltos de línea en cabeceras/logs. | `CorrelationIdFilter` (máxima precedencia) propaga o genera `X-Correlation-Id` / `X-Request-Id` en respuesta y `MDC`, sanitizando longitud (`<= 128`) y rechazando caracteres de control (`< 0x20`, `0x7F`) para mitigar *Log Injection*. Actuator expone `/api/v1/actuator/health` y `/api/v1/health`. | `CorrelationIdFilter`, `CorrelationIdFilterTest`, `HealthController` |
+| **A10 · Mishandling of Exceptional Conditions** | Respuestas de error inconsistentes, filtración de excepciones internas o bloqueos por reintentos infinitos. | `GlobalExceptionHandler` centraliza las excepciones de dominio (`UnauthorizedScopeException`, `UnsupportedMetricScopeException`, `InvalidTimeSeriesRequestException`), validación y enrutamiento bajo formato estándar RFC 7807 (`type`, `title`, `status`, `detail`, `instance`, `code`, `timestamp`). En RabbitMQ, `rabbitRetryInterceptor` aplica backoff exponencial (máx. 4 intentos) y enruta fallos definitivos a `styleradar.estadisticas.dlq`. | `GlobalExceptionHandler`, `GlobalExceptionHandlerTest`, `RabbitMqConfig` |
+
+---
+
+## 3. Reglas Operativas para Despliegue Seguro
+
+- **Gestión de Secretos:** Nunca versionar archivos `.env`, llaves `JWT_SECRET`, contraseñas de PostgreSQL ni certificados privados en el repositorio. En GitHub Actions y Azure App Service se inyectan exclusivamente mediante *Secrets* y *App Settings*.
+- **Aislamiento de Red en Cloud:** `ms-estadisticas` debe recibir tráfico únicamente a través del `api-gateway` (`HTTPS` externo → `HTTP :8420` interno) y conectarse a PostgreSQL (`5432`) y RabbitMQ (`5671` AMQPS TLS) dentro de la red configurada de Azure.
+- **Validación en CI:** Todo Pull Request hacia `develop`, `master` o `main` ejecuta compilación, pruebas automatizadas de seguridad/dominio/integración y verificación obligatoria de cobertura JaCoCo ($\ge 85\%$).
