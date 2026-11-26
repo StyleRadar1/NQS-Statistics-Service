@@ -17,11 +17,9 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -103,7 +101,7 @@ class ProcessDomainEventUseCaseTest {
     }
 
     @Test
-    void processesSubscriptionPaymentsAndPlanChanges() {
+    void processesSubscriptionPaymentsAndIgnoresMissingOrRejectedAmounts() {
         useCase.process(new DomainAnalyticsEvent(
                 "evt-pay-ok", DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED, OCCURRED_AT,
                 null, null, null, new BigDecimal("89000"), 0L, PaymentStatus.APROBADO));
@@ -112,40 +110,86 @@ class ProcessDomainEventUseCaseTest {
 
         clearInvocations(metricRepository);
         useCase.process(new DomainAnalyticsEvent(
+                "evt-pay-no-amount", DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED, OCCURRED_AT,
+                null, null, null, null, 0L, PaymentStatus.APROBADO));
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-pay-zero", DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED, OCCURRED_AT,
+                null, null, null, BigDecimal.ZERO, 0L, PaymentStatus.APROBADO));
+        useCase.process(new DomainAnalyticsEvent(
                 "evt-pay-ko", DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED, OCCURRED_AT,
                 null, null, null, new BigDecimal("89000"), 0L, PaymentStatus.RECHAZADO));
         verify(metricRepository, never()).upsertDailyIncrement(any(), any(), any(), any());
+    }
 
+    @Test
+    void processesBuyerAndStorePlanTransitionsSafely() {
         useCase.process(new DomainAnalyticsEvent(
                 "evt-plan-buyer", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
-                null, CategoryCode.PLAN_RADAR_PLUS, CategoryCode.PLAN_RADAR, null, 0L, null));
+                null, CategoryCode.PLAN_RADAR_PLUS, CategoryCode.PLAN_RADAR, null, 0L, null, "USUARIO"));
         verify(metricRepository).adjustDistributionCount(
                 MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR, -1L);
         verify(metricRepository).adjustDistributionCount(
                 MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR_PLUS, 1L);
 
+        clearInvocations(metricRepository);
         useCase.process(new DomainAnalyticsEvent(
-                "evt-plan-store", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
-                null, CategoryCode.PLAN_STORE_MONTHLY, null, null, 0L, null));
+                "evt-plan-buyer-suspended", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.SUSPENDED, CategoryCode.PLAN_RADAR_PLUS, null, 0L, null, "BUYER"));
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR_PLUS, -1L);
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR, 1L);
+        verify(metricRepository, never()).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.SUSPENDED, 1L);
+
+        clearInvocations(metricRepository);
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-plan-buyer-null-downgrade", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, null, CategoryCode.PLAN_RADAR_PLUS, null, 0L, null));
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR_PLUS, -1L);
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR, 1L);
+
+        clearInvocations(metricRepository);
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-plan-store-init", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.PLAN_STORE_MONTHLY, null, null, 0L, null, "ALMACEN"));
         verify(metricRepository).adjustDistributionCount(
                 MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM, CategoryCode.PLAN_STORE_MONTHLY, 1L);
 
+        clearInvocations(metricRepository);
         useCase.process(new DomainAnalyticsEvent(
-                "evt-plan-buyer-suspended", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
-                null, CategoryCode.SUSPENDED, CategoryCode.PLAN_RADAR, null, 0L, null, "BUYER"));
-        verify(metricRepository, times(2)).adjustDistributionCount(
-                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.PLAN_RADAR, -1L);
+                "evt-plan-store-null-suspend", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, null, CategoryCode.PLAN_STORE_MONTHLY, null, 0L, null, "STORE"));
         verify(metricRepository).adjustDistributionCount(
-                MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM, CategoryCode.SUSPENDED, 1L);
+                MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM, CategoryCode.PLAN_STORE_MONTHLY, -1L);
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.PLATFORM_STORES_BY_PLAN, PLATFORM, CategoryCode.SUSPENDED, 1L);
     }
 
     @Test
-    void rejectsMissingRequiredScopeForScopedEvents() {
+    void rejectsMissingScopeAndIncompatibleCategories() {
         assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
                 "evt-bad-inv", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
                 " ", CategoryCode.AVAILABLE, null, null, 0L, null)));
         assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-inv-cat", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
+                "store-17", CategoryCode.PLAN_RADAR, null, null, 0L, null)));
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
                 "evt-bad-don", DomainEventType.DONATION_COMPLETED, OCCURRED_AT,
                 " ", null, null, BigDecimal.ONE, 0L, null)));
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-plan-empty", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, null, null, null, 0L, null, "BUYER")));
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-plan-mismatch", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.PLAN_STORE_MONTHLY, null, null, 0L, null, "BUYER")));
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-plan-store-mismatch", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.PLAN_RADAR, null, null, 0L, null, "STORE")));
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-subscriber", DomainEventType.SUBSCRIPTION_PLAN_CHANGED, OCCURRED_AT,
+                null, CategoryCode.PLAN_RADAR, null, null, 0L, null, "UNKNOWN_TYPE")));
     }
 }
