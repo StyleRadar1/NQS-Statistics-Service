@@ -35,6 +35,30 @@ class QueryDistributionUseCaseTest {
     }
 
     @Test
+    void calculatesPlatformStoreInventoryStateCountsAndPercentages() {
+        repository.counts = List.of(
+                count("AVAILABLE", 5),
+                count("LOW_STOCK", 2),
+                count("OUT_OF_STOCK", 3));
+
+        var result = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM_SCOPE);
+
+        assertEquals(MetricCode.STORE_INVENTORY_BY_STATE, result.metricCode());
+        assertEquals(PLATFORM_SCOPE, result.scope());
+        assertEntry(result.entries().get(0), "AVAILABLE", 5, "50.0");
+        assertEntry(result.entries().get(1), "LOW_STOCK", 2, "20.0");
+        assertEntry(result.entries().get(2), "OUT_OF_STOCK", 3, "30.0");
+        assertRequested(MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM_SCOPE);
+
+        repository.counts = List.of();
+        var emptyInventory = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM_SCOPE);
+        assertEquals(3, emptyInventory.entries().size());
+        assertEntry(emptyInventory.entries().get(0), "AVAILABLE", 0, "0.0");
+        assertEntry(emptyInventory.entries().get(1), "LOW_STOCK", 0, "0.0");
+        assertEntry(emptyInventory.entries().get(2), "OUT_OF_STOCK", 0, "0.0");
+    }
+
+    @Test
     void calculatesPlatformBuyerPlanCountsAndPercentages() {
         repository.counts = List.of(count("PLAN_RADAR", 4), count("PLAN_RADAR_PLUS", 1));
 
