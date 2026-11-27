@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 
-@Schema(description = "Cumulative all-time or current month total for a specific indicator (SR-RF-82.1, SR-RF-86.4, SR-RF-86.5, SR-RF-86.6)")
+@Schema(description = "Cumulative all-time or current month total for a specific statistics indicator")
 public record MetricTotalResponseDto(
         @Schema(description = "Queried metric code", example = "FOUNDATION_GARMENTS_RECEIVED")
         MetricCode metricCode,

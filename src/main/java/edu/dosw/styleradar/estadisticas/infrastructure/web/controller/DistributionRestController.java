@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/statistics/distributions")
-@Tag(name = "Distributions", description = "Category and percentage distributions (SR-RF-91.1, SR-RF-91.2)")
+@Tag(name = "Distributions", description = "Category count and percentage distributions")
 public class DistributionRestController {
 
     private final QueryDistributionUseCase queryDistributionUseCase;
@@ -38,7 +38,9 @@ public class DistributionRestController {
     @Operation(summary = "Query the category and percentage distribution for a metric")
     public ResponseEntity<DistributionResponseDto> query(
             @Parameter(
-                    description = "STORE_INVENTORY_BY_STATE (SR-RF-81), PLATFORM_BUYERS_BY_PLAN (SR-RF-91.1), or PLATFORM_STORES_BY_PLAN (SR-RF-91.2)",
+                    description = "STORE_INVENTORY_BY_STATE (store inventory items by stock state), "
+                            + "PLATFORM_BUYERS_BY_PLAN (buyer accounts by subscription plan), or "
+                            + "PLATFORM_STORES_BY_PLAN (store accounts by subscription status)",
                     required = true,
                     schema = @Schema(allowableValues = {
                             "STORE_INVENTORY_BY_STATE",
