@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class QueryDistributionUseCaseTest {
 
-    private static final Scope STORE_SCOPE = new Scope("store-17", ScopeType.STORE);
     private static final Scope FOUNDATION_SCOPE = new Scope("foundation-42", ScopeType.FOUNDATION);
     private static final Scope PLATFORM_SCOPE = new Scope("platform", ScopeType.PLATFORM);
 
@@ -33,23 +32,6 @@ class QueryDistributionUseCaseTest {
         repository.counts = List.of();
         repository.distributionCalls = 0;
         useCase = new QueryDistributionUseCaseImpl(repository);
-    }
-
-    @Test
-    void calculatesStoreInventoryStateCountsAndPercentages() {
-        repository.counts = List.of(
-                count("AVAILABLE", 5),
-                count("LOW_STOCK", 2),
-                count("OUT_OF_STOCK", 3));
-
-        var result = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE);
-
-        assertEquals(MetricCode.STORE_INVENTORY_BY_STATE, result.metricCode());
-        assertEquals(STORE_SCOPE, result.scope());
-        assertEntry(result.entries().get(0), "AVAILABLE", 5, "50.0");
-        assertEntry(result.entries().get(1), "LOW_STOCK", 2, "20.0");
-        assertEntry(result.entries().get(2), "OUT_OF_STOCK", 3, "30.0");
-        assertRequested(MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE);
     }
 
     @Test
@@ -81,14 +63,9 @@ class QueryDistributionUseCaseTest {
     }
 
     @Test
-    void returnsAllInventoryStatesAndBuyerPlansAtZeroWhenEmpty() {
-        var inventory = useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE);
-        assertEquals(3, inventory.entries().size());
-        assertEntry(inventory.entries().get(0), "AVAILABLE", 0, "0.0");
-        assertEntry(inventory.entries().get(1), "LOW_STOCK", 0, "0.0");
-        assertEntry(inventory.entries().get(2), "OUT_OF_STOCK", 0, "0.0");
-
+    void returnsAllBuyerPlansAtZeroWhenEmpty() {
         var buyers = useCase.query(MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM_SCOPE);
+        assertEquals(2, buyers.entries().size());
         assertEntry(buyers.entries().get(0), "PLAN_RADAR", 0, "0.0");
         assertEntry(buyers.entries().get(1), "PLAN_RADAR_PLUS", 0, "0.0");
     }
@@ -96,7 +73,7 @@ class QueryDistributionUseCaseTest {
     @Test
     void rejectsUnauthorizedScopesUnsupportedMetricsAndUnsupportedCategories() {
         assertThrows(UnauthorizedScopeException.class, () -> useCase.query(
-                MetricCode.STORE_INVENTORY_BY_STATE,
+                MetricCode.PLATFORM_BUYERS_BY_PLAN,
                 FOUNDATION_SCOPE));
 
         assertEquals(0, repository.distributionCalls);
@@ -107,8 +84,8 @@ class QueryDistributionUseCaseTest {
 
         repository.counts = List.of(count("UNSUPPORTED_CATEGORY", 1));
         assertThrows(IllegalStateException.class, () -> useCase.query(
-                MetricCode.STORE_INVENTORY_BY_STATE,
-                STORE_SCOPE));
+                MetricCode.PLATFORM_BUYERS_BY_PLAN,
+                PLATFORM_SCOPE));
     }
 
     private DistributionCount count(String category, long value) {

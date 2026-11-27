@@ -14,25 +14,25 @@ class DomainValidationTest {
 
     @Test
     void validatesDistributionRecords() {
-        Scope storeScope = new Scope("store-1", ScopeType.STORE);
+        Scope platformScope = new Scope("platform", ScopeType.PLATFORM);
 
         assertThrows(IllegalArgumentException.class, () -> new CategoryCode("   "));
-        assertThrows(IllegalArgumentException.class, () -> new DistributionCount(CategoryCode.AVAILABLE, -1));
+        assertThrows(IllegalArgumentException.class, () -> new DistributionCount(CategoryCode.PLAN_RADAR, -1));
         assertThrows(IllegalArgumentException.class, () -> new DistributionEntry(
-                CategoryCode.AVAILABLE, -1, BigDecimal.ZERO));
+                CategoryCode.PLAN_RADAR, -1, BigDecimal.ZERO));
         assertThrows(IllegalArgumentException.class, () -> new DistributionEntry(
-                CategoryCode.AVAILABLE, 1, new BigDecimal("-0.1")));
+                CategoryCode.PLAN_RADAR, 1, new BigDecimal("-0.1")));
         assertThrows(IllegalArgumentException.class, () -> new DistributionEntry(
-                CategoryCode.AVAILABLE, 1, new BigDecimal("100.1")));
+                CategoryCode.PLAN_RADAR, 1, new BigDecimal("100.1")));
 
-        DistributionEntry duplicate = new DistributionEntry(CategoryCode.AVAILABLE, 1, new BigDecimal("100.0"));
+        DistributionEntry duplicate = new DistributionEntry(CategoryCode.PLAN_RADAR, 1, new BigDecimal("100.0"));
         assertThrows(IllegalArgumentException.class, () -> new Distribution(
-                MetricCode.STORE_INVENTORY_BY_STATE, storeScope, List.of(duplicate, duplicate)));
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, platformScope, List.of(duplicate, duplicate)));
     }
 
     @Test
     void validatesScopePeriodMetricTotalAndDomainAnalyticsEvent() {
-        assertThrows(IllegalArgumentException.class, () -> new Scope(" ", ScopeType.STORE));
+        assertThrows(IllegalArgumentException.class, () -> new Scope(" ", ScopeType.FOUNDATION));
         assertThrows(IllegalArgumentException.class, () -> new Period(
                 LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 9)));
 

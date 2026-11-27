@@ -4,9 +4,6 @@ import java.util.Objects;
 
 public record CategoryCode(String value) {
 
-    public static final CategoryCode AVAILABLE = new CategoryCode("AVAILABLE");
-    public static final CategoryCode LOW_STOCK = new CategoryCode("LOW_STOCK");
-    public static final CategoryCode OUT_OF_STOCK = new CategoryCode("OUT_OF_STOCK");
     public static final CategoryCode PLAN_RADAR = new CategoryCode("PLAN_RADAR");
     public static final CategoryCode PLAN_RADAR_PLUS = new CategoryCode("PLAN_RADAR_PLUS");
     public static final CategoryCode PLAN_STORE_MONTHLY = new CategoryCode("PLAN_STORE_MONTHLY");

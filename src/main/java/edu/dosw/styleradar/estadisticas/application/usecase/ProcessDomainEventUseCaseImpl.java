@@ -26,10 +26,6 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
     private static final Logger log = LoggerFactory.getLogger(ProcessDomainEventUseCaseImpl.class);
     private static final Scope PLATFORM_SCOPE = new Scope("platform", ScopeType.PLATFORM);
     private static final ZoneId BOGOTA_ZONE = ZoneId.of("America/Bogota");
-    private static final Set<CategoryCode> INVENTORY_CATEGORIES = Set.of(
-            CategoryCode.AVAILABLE,
-            CategoryCode.LOW_STOCK,
-            CategoryCode.OUT_OF_STOCK);
     private static final Set<CategoryCode> BUYER_CATEGORIES = Set.of(
             CategoryCode.PLAN_RADAR,
             CategoryCode.PLAN_RADAR_PLUS);
@@ -61,20 +57,6 @@ public class ProcessDomainEventUseCaseImpl implements ProcessDomainEventUseCase 
                     metricRepository.adjustDistributionCount(
                             MetricCode.PLATFORM_BUYERS_BY_PLAN, PLATFORM_SCOPE, CategoryCode.PLAN_RADAR, 1L);
                 }
-            }
-            case INVENTORY_STATE_CHANGED -> {
-                Scope storeScope = requireScope(event.scopeId(), ScopeType.STORE);
-                CategoryCode currentInventory = requireAllowedCategory(
-                        event.categoryCode(), INVENTORY_CATEGORIES, MetricCode.STORE_INVENTORY_BY_STATE);
-                CategoryCode previousInventory = event.previousCategoryCode() == null
-                        ? null
-                        : requireAllowedCategory(
-                                event.previousCategoryCode(), INVENTORY_CATEGORIES, MetricCode.STORE_INVENTORY_BY_STATE);
-                applyCategoryTransition(
-                        MetricCode.STORE_INVENTORY_BY_STATE,
-                        storeScope,
-                        previousInventory,
-                        currentInventory);
             }
             case GARMENT_PUBLISHED -> metricRepository.upsertDailyIncrement(
                     MetricCode.PLATFORM_GARMENT_PUBLICATIONS, PLATFORM_SCOPE, metricDate, positiveAmount);

@@ -17,12 +17,6 @@ public class AuthenticatedScopeResolver {
         AuthenticatedActor actor = authenticatedActor();
         ScopeType requestedType = metricCode.scopeType();
         return switch (actor.role()) {
-            case "STORE_ADMIN", "ADMIN_ALMACEN" -> {
-                if (requestedType != ScopeType.STORE) {
-                    throw unauthorized("STORE_ADMIN can only access STORE metrics");
-                }
-                yield scope(actor.storeId(), ScopeType.STORE);
-            }
             case "FOUNDATION_ADMIN", "FOUNDATION_REPRESENTATIVE", "REPRESENTANTE_FUNDACION", "FOUNDATION" -> {
                 if (requestedType != ScopeType.FOUNDATION) {
                     throw unauthorized("FOUNDATION_ADMIN can only access FOUNDATION metrics");

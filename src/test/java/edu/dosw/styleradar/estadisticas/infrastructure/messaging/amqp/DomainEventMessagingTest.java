@@ -51,59 +51,7 @@ class DomainEventMessagingTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void mapsInventoryEnvelopeForCreationUpdateAndEstadoField() throws Exception {
-        String updatedJson = """
-                {
-                  "eventId": "9c2e8a74-1f3b-4c5d-8e9a-0b1c2d3e4f5a",
-                  "eventType": "styleradar.inventario.actualizado",
-                  "timestamp": "2026-11-24T23:00:00Z",
-                  "data": {
-                    "tiendaId": "store-17",
-                    "sedeId": "fc942335-ab30-350a-b6a5-577cf0ca2fb5",
-                    "stockAnterior": 10,
-                    "stockDisponible": 3,
-                    "estado": "ACTUALIZADO"
-                  }
-                }
-                """;
-        RabbitMqConfig config = new RabbitMqConfig();
-        MessageConverter converter = config.jacksonAmqpMessageConverter(objectMapper);
-        MessageProperties properties = new MessageProperties();
-        properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        properties.setInferredArgumentType(new MethodParameter(
-                DomainEventListener.class.getMethod("receive", DomainEventPayload.class, String.class),
-                0).getGenericParameterType());
-        DomainEventPayload updatedPayload = (DomainEventPayload) converter.fromMessage(
-                new Message(updatedJson.getBytes(StandardCharsets.UTF_8), properties));
-        DomainAnalyticsEvent updatedEvent = mapper.toDomainEvent(
-                updatedPayload, DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY);
-
-        assertEquals(DomainEventType.INVENTORY_STATE_CHANGED, updatedEvent.eventType());
-        assertEquals("store-17", updatedEvent.scopeId());
-        assertEquals(CategoryCode.AVAILABLE, updatedEvent.previousCategoryCode());
-        assertEquals(CategoryCode.LOW_STOCK, updatedEvent.categoryCode());
-        assertNull(updatedEvent.paymentStatus());
-
-        DomainEventPayload initialPayload = objectMapper.readValue("""
-                {
-                  "eventId": "inv-create-1",
-                  "timestamp": "2026-11-24T23:00:00Z",
-                  "data": {
-                    "sedeId": "sede-1",
-                    "stockAnterior": null,
-                    "stockDisponible": 0
-                  }
-                }
-                """, DomainEventPayload.class);
-        DomainAnalyticsEvent initialEvent = mapper.toDomainEvent(
-                initialPayload, DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY);
-        assertEquals("sede-1", initialEvent.scopeId());
-        assertNull(initialEvent.previousCategoryCode());
-        assertEquals(CategoryCode.OUT_OF_STOCK, initialEvent.categoryCode());
-    }
-
-    @Test
-    void mapsAllSevenSupportedProducerContracts() throws Exception {
+    void mapsAllSixSupportedProducerContracts() throws Exception {
         DomainEventPayload userBuyerPayload = objectMapper.readValue("""
                 {
                   "eventId": "usr-1",
@@ -279,13 +227,6 @@ class DomainEventMessagingTest {
         assertThrows(IllegalArgumentException.class,
                 () -> mapper.toDomainEvent(payload("e1", null), null));
         assertThrows(IllegalArgumentException.class, () -> mapper.toDomainEvent(
-                new DomainEventPayload("e2", "styleradar.inventario.actualizado", "2026-11-24T23:00:00Z",
-                        null, null, null, null, null, null,
-                        new DomainEventPayload.DomainEventData(
-                                "store-1", null, null, null, null, -1, 4, null,
-                                null, null, null, null, null, null, null, null)),
-                DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY));
-        assertThrows(IllegalArgumentException.class, () -> mapper.toDomainEvent(
                 new DomainEventPayload("e3", "styleradar.pagos.suscripcion.plan.actualizado", "2026-11-24T23:00:00Z",
                         null, null, null, null, null, null,
                         new DomainEventPayload.DomainEventData(
@@ -368,7 +309,6 @@ class DomainEventMessagingTest {
                 .toList();
         assertEquals(List.of(
                 DomainEventMapper.USER_REGISTERED_ROUTING_KEY,
-                DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY,
                 DomainEventMapper.GARMENT_PUBLISHED_ROUTING_KEY,
                 DomainEventMapper.PLAYLIST_CREATED_ROUTING_KEY,
                 DomainEventMapper.SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY,

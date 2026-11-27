@@ -84,35 +84,35 @@ class MetricPersistenceAdapterTest {
 
     @Test
     void findsDistributionCountsAndDelegatesUpsertDailyIncrement() {
-        Scope storeScope = new Scope("store-17", ScopeType.STORE);
+        Scope platformScope = new Scope("platform", ScopeType.PLATFORM);
         metricDistributionJpaRepository.save(new MetricDistributionEntity(
                 UUID.randomUUID(),
-                "STORE",
-                "store-17",
-                "STORE_INVENTORY_BY_STATE",
-                "AVAILABLE",
+                "PLATFORM",
+                "platform",
+                "PLATFORM_BUYERS_BY_PLAN",
+                "PLAN_RADAR",
                 12L));
 
         List<DistributionCount> counts = adapter.findDistributionCounts(
-                MetricCode.STORE_INVENTORY_BY_STATE,
-                storeScope);
+                MetricCode.PLATFORM_BUYERS_BY_PLAN,
+                platformScope);
         assertEquals(1, counts.size());
-        assertEquals(CategoryCode.AVAILABLE, counts.getFirst().categoryCode());
+        assertEquals(CategoryCode.PLAN_RADAR, counts.getFirst().categoryCode());
         assertEquals(12L, counts.getFirst().count());
 
-        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.AVAILABLE, 3L);
-        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.LOW_STOCK, 2L);
-        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.LOW_STOCK, -10L);
-        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.OUT_OF_STOCK, -1L);
-        adapter.adjustDistributionCount(MetricCode.STORE_INVENTORY_BY_STATE, storeScope, CategoryCode.OUT_OF_STOCK, 0L);
+        adapter.adjustDistributionCount(MetricCode.PLATFORM_BUYERS_BY_PLAN, platformScope, CategoryCode.PLAN_RADAR, 3L);
+        adapter.adjustDistributionCount(MetricCode.PLATFORM_BUYERS_BY_PLAN, platformScope, CategoryCode.PLAN_RADAR_PLUS, 2L);
+        adapter.adjustDistributionCount(MetricCode.PLATFORM_BUYERS_BY_PLAN, platformScope, CategoryCode.PLAN_RADAR_PLUS, -10L);
+        adapter.adjustDistributionCount(MetricCode.PLATFORM_STORES_BY_PLAN, platformScope, CategoryCode.SUSPENDED, -1L);
+        adapter.adjustDistributionCount(MetricCode.PLATFORM_STORES_BY_PLAN, platformScope, CategoryCode.SUSPENDED, 0L);
 
         List<DistributionCount> updatedCounts = adapter.findDistributionCounts(
-                MetricCode.STORE_INVENTORY_BY_STATE,
-                storeScope);
+                MetricCode.PLATFORM_BUYERS_BY_PLAN,
+                platformScope);
         assertEquals(15L, updatedCounts.stream()
-                .filter(c -> c.categoryCode().equals(CategoryCode.AVAILABLE)).findFirst().orElseThrow().count());
+                .filter(c -> c.categoryCode().equals(CategoryCode.PLAN_RADAR)).findFirst().orElseThrow().count());
         assertEquals(0L, updatedCounts.stream()
-                .filter(c -> c.categoryCode().equals(CategoryCode.LOW_STOCK)).findFirst().orElseThrow().count());
+                .filter(c -> c.categoryCode().equals(CategoryCode.PLAN_RADAR_PLUS)).findFirst().orElseThrow().count());
 
         MetricDailyJpaRepository mockDailyRepo = mock(MetricDailyJpaRepository.class);
         MetricPersistenceAdapter unitAdapter = new MetricPersistenceAdapter(

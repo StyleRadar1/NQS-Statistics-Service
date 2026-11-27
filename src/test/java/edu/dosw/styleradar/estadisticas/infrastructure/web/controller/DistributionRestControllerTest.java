@@ -28,7 +28,7 @@ class DistributionRestControllerTest {
 
     private final QueryDistributionUseCase useCase = mock(QueryDistributionUseCase.class);
     private final AuthenticatedScopeResolver scopeResolver = mock(AuthenticatedScopeResolver.class);
-    private final Scope scope = new Scope("store-17", ScopeType.STORE);
+    private final Scope scope = new Scope("platform", ScopeType.PLATFORM);
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -39,25 +39,25 @@ class DistributionRestControllerTest {
 
     @Test
     void resolvesAuthenticatedScopeAndReturnsDistributionResponse() throws Exception {
-        when(scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE)).thenReturn(scope);
-        when(useCase.query(MetricCode.STORE_INVENTORY_BY_STATE, scope)).thenReturn(new Distribution(
-                MetricCode.STORE_INVENTORY_BY_STATE,
+        when(scopeResolver.resolve(MetricCode.PLATFORM_BUYERS_BY_PLAN)).thenReturn(scope);
+        when(useCase.query(MetricCode.PLATFORM_BUYERS_BY_PLAN, scope)).thenReturn(new Distribution(
+                MetricCode.PLATFORM_BUYERS_BY_PLAN,
                 scope,
                 List.of(new DistributionEntry(
-                        CategoryCode.AVAILABLE,
+                        CategoryCode.PLAN_RADAR,
                         8,
                         new BigDecimal("100.0")))));
 
-        mockMvc.perform(get("/statistics/distributions/STORE_INVENTORY_BY_STATE"))
+        mockMvc.perform(get("/statistics/distributions/PLATFORM_BUYERS_BY_PLAN"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.metricCode").value("STORE_INVENTORY_BY_STATE"))
-                .andExpect(jsonPath("$.scopeId").value("store-17"))
+                .andExpect(jsonPath("$.metricCode").value("PLATFORM_BUYERS_BY_PLAN"))
+                .andExpect(jsonPath("$.scopeId").value("platform"))
                 .andExpect(jsonPath("$.entries.length()").value(1))
-                .andExpect(jsonPath("$.entries[0].categoryCode").value("AVAILABLE"))
+                .andExpect(jsonPath("$.entries[0].categoryCode").value("PLAN_RADAR"))
                 .andExpect(jsonPath("$.entries[0].count").value(8))
                 .andExpect(jsonPath("$.entries[0].percentage").value(100.0));
 
-        verify(scopeResolver).resolve(MetricCode.STORE_INVENTORY_BY_STATE);
-        verify(useCase).query(MetricCode.STORE_INVENTORY_BY_STATE, scope);
+        verify(scopeResolver).resolve(MetricCode.PLATFORM_BUYERS_BY_PLAN);
+        verify(useCase).query(MetricCode.PLATFORM_BUYERS_BY_PLAN, scope);
     }
 }
