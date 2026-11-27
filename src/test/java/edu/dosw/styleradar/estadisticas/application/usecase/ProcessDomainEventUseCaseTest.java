@@ -28,7 +28,6 @@ class ProcessDomainEventUseCaseTest {
     private static final Instant OCCURRED_AT = Instant.parse("2026-11-21T14:30:00Z");
     private static final LocalDate DAY = LocalDate.of(2026, 11, 21);
     private static final Scope PLATFORM = new Scope("platform", ScopeType.PLATFORM);
-    private static final Scope STORE = new Scope("store-17", ScopeType.STORE);
     private static final Scope FOUNDATION = new Scope("foundation-7", ScopeType.FOUNDATION);
 
     private MetricRepositoryPort metricRepository;
@@ -55,28 +54,6 @@ class ProcessDomainEventUseCaseTest {
                 null, null, null, BigDecimal.ONE, 0L, null));
         verify(metricRepository).upsertDailyIncrement(
                 MetricCode.PLATFORM_USER_REGISTRATIONS, PLATFORM, DAY, BigDecimal.ONE);
-    }
-
-    @Test
-    void processesInventoryTransitionsInitialCreationAndNoOp() {
-        useCase.process(new DomainAnalyticsEvent(
-                "evt-inv-noop", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
-                "store-17", CategoryCode.LOW_STOCK, CategoryCode.LOW_STOCK, null, 0L, null));
-        verifyNoInteractions(metricRepository);
-
-        useCase.process(new DomainAnalyticsEvent(
-                "evt-inv-create", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
-                "store-17", CategoryCode.AVAILABLE, null, null, 0L, null));
-        verify(metricRepository).adjustDistributionCount(
-                MetricCode.STORE_INVENTORY_BY_STATE, STORE, CategoryCode.AVAILABLE, 1L);
-
-        useCase.process(new DomainAnalyticsEvent(
-                "evt-inv-move", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
-                "store-17", CategoryCode.LOW_STOCK, CategoryCode.AVAILABLE, null, 0L, null));
-        verify(metricRepository).adjustDistributionCount(
-                MetricCode.STORE_INVENTORY_BY_STATE, STORE, CategoryCode.AVAILABLE, -1L);
-        verify(metricRepository).adjustDistributionCount(
-                MetricCode.STORE_INVENTORY_BY_STATE, STORE, CategoryCode.LOW_STOCK, 1L);
     }
 
     @Test
@@ -170,12 +147,6 @@ class ProcessDomainEventUseCaseTest {
 
     @Test
     void rejectsMissingScopeAndIncompatibleCategories() {
-        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
-                "evt-bad-inv", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
-                " ", CategoryCode.AVAILABLE, null, null, 0L, null)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
-                "evt-bad-inv-cat", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
-                "store-17", CategoryCode.PLAN_RADAR, null, null, 0L, null)));
         assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
                 "evt-bad-don", DomainEventType.DONATION_COMPLETED, OCCURRED_AT,
                 " ", null, null, BigDecimal.ONE, 0L, null)));

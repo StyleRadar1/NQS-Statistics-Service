@@ -27,12 +27,12 @@ class AuthenticatedScopeResolverTest {
     }
 
     @Test
-    void resolvesOnlyTheAuthenticatedStoreScope() {
+    void rejectsStoreAdminAndBuyerRoles() {
         authenticate(new AuthenticatedActor("STORE_ADMIN", "store-17", null));
 
-        assertEquals(
-                new Scope("store-17", ScopeType.STORE),
-                resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertThrows(
+                UnauthorizedScopeException.class,
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
         assertThrows(
                 UnauthorizedScopeException.class,
                 () -> resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
@@ -46,7 +46,7 @@ class AuthenticatedScopeResolverTest {
                 resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
 
         authenticate(new AuthenticatedActor("PLATFORM_ADMIN", null, null));
         assertEquals(
@@ -56,15 +56,15 @@ class AuthenticatedScopeResolverTest {
                 UnauthorizedScopeException.class,
                 () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
-        authenticate(new AuthenticatedActor("STORE_ADMIN", "   ", null));
+        authenticate(new AuthenticatedActor("FOUNDATION_ADMIN", null, "   "));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         authenticate(new AuthenticatedActor("BUYER", "store-1", null));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
     }
 
     @Test
@@ -72,19 +72,19 @@ class AuthenticatedScopeResolverTest {
         SecurityContextHolder.clearContext();
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.unauthenticated("anonymous", null));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated("not-an-actor", null, java.util.List.of()));
         assertThrows(
                 UnauthorizedScopeException.class,
-                () -> resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+                () -> resolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
     }
 
     @Test
@@ -93,9 +93,9 @@ class AuthenticatedScopeResolverTest {
         storeReq.addHeader("X-User-Role", "ROLE_store_admin");
         storeReq.addHeader("X-Store-Id", " store-99 ");
         filter.doFilter(storeReq, new MockHttpServletResponse(), new MockFilterChain());
-        assertEquals(
-                new Scope("store-99", ScopeType.STORE),
-                resolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertThrows(
+                UnauthorizedScopeException.class,
+                () -> resolver.resolve(MetricCode.PLATFORM_USER_REGISTRATIONS));
 
         SecurityContextHolder.clearContext();
         MockHttpServletRequest foundationReq = new MockHttpServletRequest();

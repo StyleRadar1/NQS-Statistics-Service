@@ -59,8 +59,6 @@ public class RabbitMqConfig {
                 BindingBuilder.bind(domainEventsQueue).to(analyticsExchange)
                         .with(DomainEventMapper.USER_REGISTERED_ROUTING_KEY),
                 BindingBuilder.bind(domainEventsQueue).to(analyticsExchange)
-                        .with(DomainEventMapper.INVENTORY_UPDATED_ROUTING_KEY),
-                BindingBuilder.bind(domainEventsQueue).to(analyticsExchange)
                         .with(DomainEventMapper.GARMENT_PUBLISHED_ROUTING_KEY),
                 BindingBuilder.bind(domainEventsQueue).to(analyticsExchange)
                         .with(DomainEventMapper.PLAYLIST_CREATED_ROUTING_KEY),

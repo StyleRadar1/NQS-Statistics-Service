@@ -29,7 +29,6 @@ class QueryMetricSummaryUseCaseTest {
 
     private static final Clock CLOCK = Clock.fixed(
             Instant.parse("2026-11-21T12:00:00Z"), ZoneOffset.UTC);
-    private static final Scope STORE_SCOPE = new Scope("store-17", ScopeType.STORE);
 
     private StubMetricRepository repository;
     private QueryMetricSummaryUseCaseImpl useCase;
@@ -72,7 +71,7 @@ class QueryMetricSummaryUseCaseTest {
         assertThrows(UnauthorizedScopeException.class, () -> useCase.queryTotal(
                 MetricCode.FOUNDATION_GARMENTS_RECEIVED, platformScope));
         assertThrows(UnsupportedMetricScopeException.class, () -> useCase.queryTotal(
-                MetricCode.STORE_INVENTORY_BY_STATE, STORE_SCOPE));
+                MetricCode.PLATFORM_BUYERS_BY_PLAN, platformScope));
     }
 
     private static final class StubMetricRepository implements MetricRepositoryPort {

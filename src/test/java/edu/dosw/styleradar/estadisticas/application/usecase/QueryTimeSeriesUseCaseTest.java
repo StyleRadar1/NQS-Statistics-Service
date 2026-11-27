@@ -65,7 +65,7 @@ class QueryTimeSeriesUseCaseTest {
     void rejectsWrongScopeGranularityAndUnsupportedMetricsBeforeAccessingRepository() {
         assertThrows(UnauthorizedScopeException.class, () -> useCase.query(
                 MetricCode.PLATFORM_USER_REGISTRATIONS,
-                new Scope("store-1", ScopeType.STORE),
+                new Scope("foundation-1", ScopeType.FOUNDATION),
                 null,
                 TimeGranularity.DAY));
 

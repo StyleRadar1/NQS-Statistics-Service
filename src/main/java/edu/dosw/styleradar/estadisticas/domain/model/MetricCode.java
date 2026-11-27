@@ -6,7 +6,6 @@ public enum MetricCode {
     PLATFORM_PLAYLISTS_CREATED(ScopeType.PLATFORM, TimeGranularity.DAY),
     PLATFORM_USER_REGISTRATIONS(ScopeType.PLATFORM, TimeGranularity.DAY),
     PLATFORM_SUBSCRIPTION_REVENUE(ScopeType.PLATFORM, TimeGranularity.MONTH),
-    STORE_INVENTORY_BY_STATE(ScopeType.STORE, TimeGranularity.DAY),
     PLATFORM_BUYERS_BY_PLAN(ScopeType.PLATFORM, TimeGranularity.MONTH),
     PLATFORM_STORES_BY_PLAN(ScopeType.PLATFORM, TimeGranularity.MONTH),
     PLATFORM_MONTHLY_DONATIONS(ScopeType.PLATFORM, TimeGranularity.MONTH);

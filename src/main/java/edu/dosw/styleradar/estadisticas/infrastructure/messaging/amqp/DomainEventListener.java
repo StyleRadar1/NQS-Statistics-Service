@@ -61,7 +61,7 @@ public class DomainEventListener {
             @Header(name = AmqpHeaders.RECEIVED_ROUTING_KEY, required = false) String routingKey
     ) {
         if (routingKey != null && !routingKey.isBlank() && !domainEventMapper.isSupportedRoutingKey(routingKey)) {
-            log.info("Evento ignorado por routingKey fuera de los 7 contratos vigentes: routingKey={}", routingKey);
+            log.info("Evento ignorado por routingKey fuera de los 6 contratos vigentes: routingKey={}", routingKey);
             return;
         }
 

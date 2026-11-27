@@ -22,10 +22,6 @@ import java.util.Objects;
 @Service
 public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
 
-    private static final List<CategoryCode> INVENTORY_CATEGORIES = List.of(
-            CategoryCode.AVAILABLE,
-            CategoryCode.LOW_STOCK,
-            CategoryCode.OUT_OF_STOCK);
     private static final List<CategoryCode> BUYER_PLAN_CATEGORIES = List.of(
             CategoryCode.PLAN_RADAR,
             CategoryCode.PLAN_RADAR_PLUS);
@@ -71,7 +67,6 @@ public class QueryDistributionUseCaseImpl implements QueryDistributionUseCase {
 
     private List<CategoryCode> categoriesFor(MetricCode metricCode) {
         return switch (metricCode) {
-            case STORE_INVENTORY_BY_STATE -> INVENTORY_CATEGORIES;
             case PLATFORM_BUYERS_BY_PLAN -> BUYER_PLAN_CATEGORIES;
             case PLATFORM_STORES_BY_PLAN -> STORE_PLAN_CATEGORIES;
             default -> throw new UnsupportedMetricScopeException(

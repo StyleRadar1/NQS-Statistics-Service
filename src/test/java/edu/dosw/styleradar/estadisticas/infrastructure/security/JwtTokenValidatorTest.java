@@ -167,8 +167,8 @@ class JwtTokenValidatorTest {
         GatewayHeaderAuthenticationFilter filter = new GatewayHeaderAuthenticationFilter(validator);
 
         String validToken = signToken(TEST_SECRET, Map.of(
-                "sub", "store-44",
-                "roles", List.of("ADMIN_ALMACEN"),
+                "sub", "foundation-44",
+                "roles", List.of("REPRESENTANTE_FUNDACION"),
                 "exp", NOW.plusSeconds(300).getEpochSecond()));
         MockHttpServletRequest validReq = new MockHttpServletRequest();
         validReq.addHeader("Authorization", "Bearer " + validToken);
@@ -176,14 +176,14 @@ class JwtTokenValidatorTest {
         filter.doFilter(validReq, validRes, new MockFilterChain());
 
         assertEquals(200, validRes.getStatus());
-        assertEquals(new Scope("store-44", ScopeType.STORE), scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertEquals(new Scope("foundation-44", ScopeType.FOUNDATION), scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         SecurityContextHolder.clearContext();
         String invalidToken = signToken(OTHER_SECRET, Map.of(
-                "sub", "store-44",
-                "roles", List.of("ADMIN_ALMACEN")));
+                "sub", "foundation-44",
+                "roles", List.of("REPRESENTANTE_FUNDACION")));
         MockHttpServletRequest invalidReq = new MockHttpServletRequest();
-        invalidReq.setRequestURI("/api/v1/statistics/distributions/STORE_INVENTORY_BY_STATE");
+        invalidReq.setRequestURI("/api/v1/statistics/summary/totals/FOUNDATION_GARMENTS_RECEIVED");
         invalidReq.addHeader("Authorization", "Bearer " + invalidToken);
         MockHttpServletResponse invalidRes = new MockHttpServletResponse();
         filter.doFilter(invalidReq, invalidRes, new MockFilterChain());
@@ -198,34 +198,34 @@ class JwtTokenValidatorTest {
         MockHttpServletRequest buyerReq = new MockHttpServletRequest();
         buyerReq.addHeader("Authorization", "Bearer " + buyerToken);
         filter.doFilter(buyerReq, new MockHttpServletResponse(), new MockFilterChain());
-        assertThrows(UnauthorizedScopeException.class, () -> scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertThrows(UnauthorizedScopeException.class, () -> scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
     }
 
     @Test
     void jwtClaimCannotBeOverriddenByHeadersButFallsBackWhenClaimIsNull() throws Exception {
         GatewayHeaderAuthenticationFilter filter = new GatewayHeaderAuthenticationFilter(validator);
 
-        String claimStoreToken = signToken(TEST_SECRET, Map.of(
+        String claimFoundationToken = signToken(TEST_SECRET, Map.of(
                 "sub", "user-10",
-                "roles", List.of("STORE"),
-                "storeId", "store-jwt-10"));
+                "roles", List.of("FOUNDATION_REPRESENTATIVE"),
+                "foundationId", "foundation-jwt-10"));
         MockHttpServletRequest idorAttemptReq = new MockHttpServletRequest();
-        idorAttemptReq.addHeader("Authorization", "Bearer " + claimStoreToken);
-        idorAttemptReq.addHeader("X-Store-Id", "victim-store-99");
+        idorAttemptReq.addHeader("Authorization", "Bearer " + claimFoundationToken);
+        idorAttemptReq.addHeader("X-Foundation-Id", "victim-foundation-99");
         filter.doFilter(idorAttemptReq, new MockHttpServletResponse(), new MockFilterChain());
-        assertEquals(new Scope("store-jwt-10", ScopeType.STORE),
-                scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertEquals(new Scope("foundation-jwt-10", ScopeType.FOUNDATION),
+                scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         SecurityContextHolder.clearContext();
-        String noStoreClaimToken = signToken(TEST_SECRET, Map.of(
+        String noFoundationClaimToken = signToken(TEST_SECRET, Map.of(
                 "sub", "user-20",
-                "roles", List.of("TIENDA")));
+                "roles", List.of("FOUNDATION")));
         MockHttpServletRequest gatewayFallbackReq = new MockHttpServletRequest();
-        gatewayFallbackReq.addHeader("Authorization", "Bearer " + noStoreClaimToken);
-        gatewayFallbackReq.addHeader("X-Store-Id", "store-gw-20");
+        gatewayFallbackReq.addHeader("Authorization", "Bearer " + noFoundationClaimToken);
+        gatewayFallbackReq.addHeader("X-Foundation-Id", "foundation-gw-20");
         filter.doFilter(gatewayFallbackReq, new MockHttpServletResponse(), new MockFilterChain());
-        assertEquals(new Scope("store-gw-20", ScopeType.STORE),
-                scopeResolver.resolve(MetricCode.STORE_INVENTORY_BY_STATE));
+        assertEquals(new Scope("foundation-gw-20", ScopeType.FOUNDATION),
+                scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
     }
 
     private String signToken(String base64Secret, Map<String, Object> claims) throws Exception {
