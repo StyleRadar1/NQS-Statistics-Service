@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/statistics/summary")
-@Tag(name = "Totals", description = "Cumulative and monthly total indicators (SR-RF-82.1, SR-RF-86.4, SR-RF-86.5, SR-RF-86.6)")
+@Tag(name = "Totals", description = "Cumulative all-time and current-month total indicators")
 public class MetricSummaryRestController {
 
     private final QueryMetricSummaryUseCase queryMetricSummaryUseCase;
@@ -42,8 +42,10 @@ public class MetricSummaryRestController {
                     + "or current month donations (PLATFORM_MONTHLY_DONATIONS).")
     public ResponseEntity<MetricTotalResponseDto> queryTotal(
             @Parameter(
-                    description = "FOUNDATION_GARMENTS_RECEIVED (SR-RF-82.1), PLATFORM_GARMENT_PUBLICATIONS (SR-RF-86.4), "
-                            + "PLATFORM_PLAYLISTS_CREATED (SR-RF-86.5), or PLATFORM_MONTHLY_DONATIONS (SR-RF-86.6)",
+                    description = "FOUNDATION_GARMENTS_RECEIVED (total garments received by foundation), "
+                            + "PLATFORM_GARMENT_PUBLICATIONS (total published garments), "
+                            + "PLATFORM_PLAYLISTS_CREATED (total created playlists), or "
+                            + "PLATFORM_MONTHLY_DONATIONS (completed donations in the current month)",
                     required = true,
                     schema = @Schema(allowableValues = {
                             "FOUNDATION_GARMENTS_RECEIVED",

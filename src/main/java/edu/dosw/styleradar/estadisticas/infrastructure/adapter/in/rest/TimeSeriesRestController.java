@@ -24,7 +24,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/statistics/time-series")
-@Tag(name = "Time Series", description = "Daily user registrations (SR-RF-88.2) and monthly subscription revenue (SR-RF-89.1)")
+@Tag(name = "Time Series", description = "Daily user registrations and monthly subscription revenue")
 public class TimeSeriesRestController {
 
     private final QueryTimeSeriesUseCase queryTimeSeriesUseCase;
@@ -49,7 +49,8 @@ public class TimeSeriesRestController {
                     + "PLATFORM_SUBSCRIPTION_REVENUE defaults to the last six calendar months (MONTH granularity).")
     public ResponseEntity<TimeSeriesResponseDto> query(
             @Parameter(
-                    description = "PLATFORM_USER_REGISTRATIONS (SR-RF-88.2) or PLATFORM_SUBSCRIPTION_REVENUE (SR-RF-89.1)",
+                    description = "PLATFORM_USER_REGISTRATIONS (daily user registrations) or "
+                            + "PLATFORM_SUBSCRIPTION_REVENUE (monthly subscription revenue)",
                     required = true,
                     schema = @Schema(allowableValues = {
                             "PLATFORM_USER_REGISTRATIONS",
