@@ -26,6 +26,8 @@ public class DomainEventMapper {
     private static final Logger log = LoggerFactory.getLogger(DomainEventMapper.class);
 
     public static final String USER_REGISTERED_ROUTING_KEY = "styleradar.usuarios.usuario.registrado";
+    public static final String INVENTORY_UPDATED_ROUTING_KEY = "styleradar.inventario.actualizado";
+    public static final String INVENTORY_LEGACY_UPDATED_ROUTING_KEY = "styleradar.inventario.stock.actualizado";
     public static final String GARMENT_PUBLISHED_ROUTING_KEY = "styleradar.catalogo.prenda.publicada";
     public static final String PLAYLIST_CREATED_ROUTING_KEY = "styleradar.playlist.creada";
     public static final String SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY = "styleradar.pagos.pago.confirmado";
@@ -58,6 +60,24 @@ public class DomainEventMapper {
             case USER_REGISTERED -> {
                 String rawRole = resolveRawRole(payload, eventData);
                 categoryCode = isBuyerRole(rawRole) ? CategoryCode.PLAN_RADAR : null;
+            }
+            case INVENTORY_STATE_CHANGED -> {
+                Integer stockDisponible = eventData != null && eventData.stockDisponible() != null
+                        ? eventData.stockDisponible()
+                        : payload.stockDisponible();
+                Integer stockAnterior = eventData != null && eventData.stockAnterior() != null
+                        ? eventData.stockAnterior()
+                        : payload.stockAnterior();
+
+                if (stockDisponible != null || eventData != null) {
+                    previousCategoryCode = stockAnterior == null
+                            ? null
+                            : categoryForStock(requiredStock(stockAnterior, "stockAnterior"));
+                    categoryCode = categoryForStock(requiredStock(stockDisponible, "stockDisponible"));
+                } else {
+                    previousCategoryCode = normalizeInventoryCategory(payload.previousCategoryCode());
+                    categoryCode = normalizeInventoryCategory(firstNonBlank(payload.categoryCode(), payload.estado()));
+                }
             }
             case SUBSCRIPTION_PAYMENT_PROCESSED -> {
                 amount = firstNonNull(
@@ -202,6 +222,7 @@ public class DomainEventMapper {
         }
         return switch (trimmed.toUpperCase(Locale.ROOT)) {
             case "USUARIO_REGISTRADO", "USER_CREATED", "USERREGISTRATIONEVENT" -> DomainEventType.USER_REGISTERED;
+            case "INVENTARIO_ACTUALIZADO", "INVENTORY_UPDATED", "STOCK_UPDATED" -> DomainEventType.INVENTORY_STATE_CHANGED;
             case "PRENDA_PUBLICADA", "ITEM_PUBLISHED" -> DomainEventType.GARMENT_PUBLISHED;
             case "PLAYLIST_CREADA" -> DomainEventType.PLAYLIST_CREATED;
             case "PAGO_CONFIRMADO", "PAYMENT_CONFIRMED", "SUBSCRIPTION_PAYMENT_CONFIRMED", "PAGOCONFIRMADOEVENT" ->
@@ -219,6 +240,7 @@ public class DomainEventMapper {
         }
         return switch (normalizedKey) {
             case USER_REGISTERED_ROUTING_KEY -> DomainEventType.USER_REGISTERED;
+            case INVENTORY_UPDATED_ROUTING_KEY, INVENTORY_LEGACY_UPDATED_ROUTING_KEY -> DomainEventType.INVENTORY_STATE_CHANGED;
             case GARMENT_PUBLISHED_ROUTING_KEY -> DomainEventType.GARMENT_PUBLISHED;
             case PLAYLIST_CREATED_ROUTING_KEY -> DomainEventType.PLAYLIST_CREATED;
             case SUBSCRIPTION_PAYMENT_CONFIRMED_ROUTING_KEY -> DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED;
@@ -289,6 +311,35 @@ public class DomainEventMapper {
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Invalid ISO-8601 timestamp: " + value, ex);
         }
+    }
+
+    private Integer requiredStock(Integer stock, String field) {
+        if (stock == null || stock < 0) {
+            throw new IllegalArgumentException(field + " must be a non-negative number");
+        }
+        return stock;
+    }
+
+    private CategoryCode categoryForStock(Integer stock) {
+        if (stock == 0) {
+            return CategoryCode.OUT_OF_STOCK;
+        }
+        if (stock <= 3) {
+            return CategoryCode.LOW_STOCK;
+        }
+        return CategoryCode.AVAILABLE;
+    }
+
+    private CategoryCode normalizeInventoryCategory(String rawCategory) {
+        if (rawCategory == null || rawCategory.isBlank()) {
+            return null;
+        }
+        return switch (rawCategory.trim().toUpperCase(Locale.ROOT)) {
+            case "DISPONIBLE", "NUEVA_PRENDA", "AVAILABLE" -> CategoryCode.AVAILABLE;
+            case "ULTIMAS_UNIDADES", "LOW_STOCK" -> CategoryCode.LOW_STOCK;
+            case "AGOTADA", "AGOTADO", "OUT_OF_STOCK" -> CategoryCode.OUT_OF_STOCK;
+            default -> throw new IllegalArgumentException("Unsupported inventory state category: " + rawCategory);
+        };
     }
 
     private CategoryCode normalizePlanCategory(String rawPlan) {

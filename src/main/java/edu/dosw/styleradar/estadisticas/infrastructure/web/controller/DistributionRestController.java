@@ -38,9 +38,10 @@ public class DistributionRestController {
     @Operation(summary = "Query the category and percentage distribution for a metric")
     public ResponseEntity<DistributionResponseDto> query(
             @Parameter(
-                    description = "PLATFORM_BUYERS_BY_PLAN (SR-RF-91.1) or PLATFORM_STORES_BY_PLAN (SR-RF-91.2)",
+                    description = "STORE_INVENTORY_BY_STATE (SR-RF-81), PLATFORM_BUYERS_BY_PLAN (SR-RF-91.1), or PLATFORM_STORES_BY_PLAN (SR-RF-91.2)",
                     required = true,
                     schema = @Schema(allowableValues = {
+                            "STORE_INVENTORY_BY_STATE",
                             "PLATFORM_BUYERS_BY_PLAN",
                             "PLATFORM_STORES_BY_PLAN"}))
             @PathVariable MetricCode metricCode

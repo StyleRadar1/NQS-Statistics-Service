@@ -2,6 +2,7 @@ package edu.dosw.styleradar.estadisticas.domain.model;
 
 public enum DomainEventType {
     USER_REGISTERED,
+    INVENTORY_STATE_CHANGED,
     GARMENT_PUBLISHED,
     PLAYLIST_CREATED,
     SUBSCRIPTION_PAYMENT_PROCESSED,

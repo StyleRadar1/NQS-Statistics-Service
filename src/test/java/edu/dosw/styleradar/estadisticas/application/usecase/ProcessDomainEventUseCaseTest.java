@@ -57,6 +57,28 @@ class ProcessDomainEventUseCaseTest {
     }
 
     @Test
+    void processesInventoryTransitionsUnderPlatformScope() {
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-inv-noop", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
+                "store-17", CategoryCode.LOW_STOCK, CategoryCode.LOW_STOCK, null, 0L, null));
+        verifyNoInteractions(metricRepository);
+
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-inv-create", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
+                "store-17", CategoryCode.AVAILABLE, null, null, 0L, null));
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM, CategoryCode.AVAILABLE, 1L);
+
+        useCase.process(new DomainAnalyticsEvent(
+                "evt-inv-move", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
+                "store-17", CategoryCode.LOW_STOCK, CategoryCode.AVAILABLE, null, 0L, null));
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM, CategoryCode.AVAILABLE, -1L);
+        verify(metricRepository).adjustDistributionCount(
+                MetricCode.STORE_INVENTORY_BY_STATE, PLATFORM, CategoryCode.LOW_STOCK, 1L);
+    }
+
+    @Test
     void processesGarmentPublicationsPlaylistsAndDonations() {
         useCase.process(new DomainAnalyticsEvent(
                 "evt-gar-1", DomainEventType.GARMENT_PUBLISHED, OCCURRED_AT,
@@ -147,6 +169,9 @@ class ProcessDomainEventUseCaseTest {
 
     @Test
     void rejectsMissingScopeAndIncompatibleCategories() {
+        assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
+                "evt-bad-inv-cat", DomainEventType.INVENTORY_STATE_CHANGED, OCCURRED_AT,
+                "store-17", CategoryCode.PLAN_RADAR, null, null, 0L, null)));
         assertThrows(IllegalArgumentException.class, () -> useCase.process(new DomainAnalyticsEvent(
                 "evt-bad-don", DomainEventType.DONATION_COMPLETED, OCCURRED_AT,
                 " ", null, null, BigDecimal.ONE, 0L, null)));
