@@ -46,14 +46,14 @@ class JwtTokenValidatorTest {
     }
 
     @Test
-    void validatesHs256TokensWithOfficialRolesAndSubFallback() throws Exception {
+    void validatesHs256TokensWithOfficialRolesAndNoSubFallback() throws Exception {
         String storeToken = signToken(TEST_SECRET, Map.of(
                 "sub", "store-sub-1",
                 "roles", List.of("ADMIN_ALMACEN"),
                 "exp", NOW.plusSeconds(300).getEpochSecond()));
         AuthenticatedActor storeActor = validator.validateAndExtract(storeToken);
         assertEquals("STORE_ADMIN", storeActor.role());
-        assertEquals("store-sub-1", storeActor.storeId());
+        assertNull(storeActor.storeId());
 
         String explicitStoreToken = signToken(TEST_SECRET, Map.of(
                 "sub", "user-123",
@@ -66,7 +66,7 @@ class JwtTokenValidatorTest {
                 "roles", List.of("REPRESENTANTE_FUNDACION")));
         AuthenticatedActor foundationActor = validator.validateAndExtract(foundationToken);
         assertEquals("FOUNDATION_ADMIN", foundationActor.role());
-        assertEquals("foundation-sub-2", foundationActor.foundationId());
+        assertNull(foundationActor.foundationId());
 
         String adminToken = signToken(TEST_SECRET, Map.of(
                 "sub", "admin-1",
@@ -84,11 +84,12 @@ class JwtTokenValidatorTest {
         assertEquals("PLATFORM_ADMIN", validator.validateAndExtract(srAdminToken).role());
 
         String srFoundationToken = signToken(TEST_SECRET, Map.of(
-                "sub", "fund-sr-1",
-                "roles", List.of("FOUNDATION_REPRESENTATIVE")));
+                "sub", "123",
+                "roles", List.of("FOUNDATION_REPRESENTATIVE"),
+                "foundationId", "501"));
         AuthenticatedActor srFoundationActor = validator.validateAndExtract(srFoundationToken);
         assertEquals("FOUNDATION_ADMIN", srFoundationActor.role());
-        assertEquals("fund-sr-1", srFoundationActor.foundationId());
+        assertEquals("501", srFoundationActor.foundationId());
 
         String srBuyerToken = signToken(TEST_SECRET, Map.of(
                 "sub", "buyer-sr-1",
@@ -167,8 +168,9 @@ class JwtTokenValidatorTest {
         GatewayHeaderAuthenticationFilter filter = new GatewayHeaderAuthenticationFilter(validator);
 
         String validToken = signToken(TEST_SECRET, Map.of(
-                "sub", "foundation-44",
-                "roles", List.of("REPRESENTANTE_FUNDACION"),
+                "sub", "123",
+                "roles", List.of("FOUNDATION_REPRESENTATIVE"),
+                "foundationId", "501",
                 "exp", NOW.plusSeconds(300).getEpochSecond()));
         MockHttpServletRequest validReq = new MockHttpServletRequest();
         validReq.addHeader("Authorization", "Bearer " + validToken);
@@ -176,7 +178,18 @@ class JwtTokenValidatorTest {
         filter.doFilter(validReq, validRes, new MockFilterChain());
 
         assertEquals(200, validRes.getStatus());
-        assertEquals(new Scope("foundation-44", ScopeType.FOUNDATION), scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
+        assertEquals(new Scope("501", ScopeType.FOUNDATION), scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
+
+        SecurityContextHolder.clearContext();
+        String missingFoundationIdToken = signToken(TEST_SECRET, Map.of(
+                "sub", "123",
+                "roles", List.of("FOUNDATION_REPRESENTATIVE"),
+                "exp", NOW.plusSeconds(300).getEpochSecond()));
+        MockHttpServletRequest missingIdReq = new MockHttpServletRequest();
+        missingIdReq.addHeader("Authorization", "Bearer " + missingFoundationIdToken);
+        filter.doFilter(missingIdReq, new MockHttpServletResponse(), new MockFilterChain());
+        assertThrows(UnauthorizedScopeException.class,
+                () -> scopeResolver.resolve(MetricCode.FOUNDATION_GARMENTS_RECEIVED));
 
         SecurityContextHolder.clearContext();
         String invalidToken = signToken(OTHER_SECRET, Map.of(

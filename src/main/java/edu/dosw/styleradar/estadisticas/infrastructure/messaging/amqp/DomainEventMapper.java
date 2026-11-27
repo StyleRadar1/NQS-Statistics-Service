@@ -229,7 +229,8 @@ public class DomainEventMapper {
                     DomainEventType.SUBSCRIPTION_PAYMENT_PROCESSED;
             case "SUSCRIPCION_PLAN_ACTUALIZADO", "SUBSCRIPTION_PLAN_UPDATED", "PLAN_ACTUALIZADO", "PLAN_UPDATED",
                     "SUSCRIPCIONPLANACTUALIZADOEVENT" -> DomainEventType.SUBSCRIPTION_PLAN_CHANGED;
-            case "DONACION_COMPLETADA" -> DomainEventType.DONATION_COMPLETED;
+            case "DONACION_COMPLETADA", "DONATIONDELIVEREDEVENT", "DONATION_DELIVERED", "DONACION_ENTREGADA" ->
+                    DomainEventType.DONATION_COMPLETED;
             default -> null;
         };
     }

@@ -96,13 +96,8 @@ public class JwtTokenValidator {
         String storeId = claimStoreId != null ? claimStoreId : trimToNull(headerStoreId);
         String foundationId = claimFoundationId != null ? claimFoundationId : trimToNull(headerFoundationId);
 
-        if ("STORE_ADMIN".equals(role) && storeId == null) {
-            log.warn("JWT for STORE_ADMIN sub={} lacks storeId claim and X-Store-Id header; falling back to sub", subject);
-            storeId = subject;
-        }
         if ("FOUNDATION_ADMIN".equals(role) && foundationId == null) {
-            log.warn("JWT for FOUNDATION_ADMIN sub={} lacks foundationId claim and X-Foundation-Id header; falling back to sub", subject);
-            foundationId = subject;
+            log.warn("JWT for FOUNDATION_REPRESENTATIVE sub={} lacks foundationId claim and X-Foundation-Id header", subject);
         }
 
         return new AuthenticatedActor(role, storeId, foundationId);

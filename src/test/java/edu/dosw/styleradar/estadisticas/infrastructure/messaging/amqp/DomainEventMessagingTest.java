@@ -183,14 +183,15 @@ class DomainEventMessagingTest {
         DomainEventPayload donationPayload = objectMapper.readValue("""
                 {
                   "eventId": "don-1",
+                  "eventType": "DonationDeliveredEvent",
                   "occurredAt": "2026-11-24T15:00:00Z",
-                  "data": { "fundacionId": "3", "cantidad": 4 }
+                  "data": { "foundationId": 501, "cantidad": 4 }
                 }
                 """, DomainEventPayload.class);
         DomainAnalyticsEvent donation = mapper.toDomainEvent(
                 donationPayload, DomainEventMapper.DONATION_COMPLETED_ROUTING_KEY);
         assertEquals(DomainEventType.DONATION_COMPLETED, donation.eventType());
-        assertEquals("3", donation.scopeId());
+        assertEquals("501", donation.scopeId());
         assertEquals(BigDecimal.valueOf(4), donation.amount());
     }
 
